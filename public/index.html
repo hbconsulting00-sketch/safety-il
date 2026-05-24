@@ -41,8 +41,12 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
 .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green-light); animation: blink 2s ease-in-out infinite; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
 #status-text { font-size: 11px; color: var(--text-muted); }
-.hist-header-btn { padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); font-size: 12px; font-family: 'Heebo', sans-serif; cursor: pointer; transition: all 0.15s; }
-.hist-header-btn:hover { background: rgba(201,168,76,0.1); border-color: var(--border-strong); color: var(--gold-light); }
+/* TOOLBAR */
+#toolbar { background: var(--surface-2); border-bottom: 1px solid var(--border); padding: 7px 20px; display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
+#toolbar-label { font-size: 10px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 0.08em; margin-left: 6px; }
+.tool-btn { display: flex; align-items: center; gap: 5px; padding: 5px 13px; border-radius: 20px; border: 1px solid var(--border-strong); background: rgba(201,168,76,0.07); color: var(--gold-light); font-size: 12.5px; font-family: 'Heebo', sans-serif; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+.tool-btn:hover { background: rgba(201,168,76,0.18); border-color: var(--gold); }
+.tool-btn-sep { width: 1px; height: 18px; background: var(--border); margin: 0 2px; }
 
 #layout { display: flex; flex: 1; overflow: hidden; }
 
@@ -169,7 +173,7 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
 /* PRINT */
 @media print {
   #print-header { display: block !important; padding-bottom: 12px; margin-bottom: 20px; border-bottom: 2px solid #c9a84c; font-family: Arial, sans-serif; }
-  #header, #sidebar, #role-bar, #quick-row, #action-bar, #input-bar,
+  #header, #toolbar, #sidebar, #role-bar, #quick-row, #action-bar, #input-bar,
   #disclaimer, #error-banner, #header-right, #checklist-modal, #history-modal { display: none !important; }
 
   body { background: white !important; color: #111 !important; height: auto !important; overflow: visible !important; }
@@ -198,9 +202,20 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
     </div>
   </div>
   <div id="header-right">
-    <button class="hist-header-btn" onclick="openHistory()">📂 שיחות שמורות</button>
     <div class="status-pill"><div class="status-dot"></div><span id="status-text">מחובר לשרת</span></div>
   </div>
+</div>
+
+<div id="toolbar">
+  <span id="toolbar-label">כלי עבודה:</span>
+  <button class="tool-btn" onclick="generateChecklist()" title="יצירת רשימת תיוג מהשיחה לפי תפקידך">📋 רשימת תיוג</button>
+  <div class="tool-btn-sep"></div>
+  <button class="tool-btn" onclick="exportPDF()">📄 PDF</button>
+  <button class="tool-btn" onclick="exportWord()">📝 Word</button>
+  <div class="tool-btn-sep"></div>
+  <button class="tool-btn" onclick="saveConversation()">💾 שמור שיחה</button>
+  <button class="tool-btn" onclick="openHistory()">📂 היסטוריה</button>
+  <button class="tool-btn" onclick="shareLink()">🔗 שתף</button>
 </div>
 
 <div id="error-banner">⚠️ שגיאת חיבור — ודא שהשרת פועל: <code>node server.js</code></div>
@@ -271,15 +286,6 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
       <button class="quick-btn" onclick="askQ('מה עושים אם זיהיתי מפגע ואין מנהל זמין?')">⚠️ מפגע ללא מנהל</button>
       <button class="quick-btn" onclick="askQ('מה חובות המעסיק לפי פקודת הבטיחות בעבודה?')">⚖️ חובות מעסיק</button>
       <button class="quick-btn" onclick="askQ('מה הדרישות לעבודה עם חומרים מסוכנים בישראל?')">☣️ חומרים מסוכנים</button>
-    </div>
-
-    <div id="action-bar">
-      <div id="action-bar-label">כלי עבודה</div>
-      <button class="action-btn" onclick="generateChecklist()">📋 רשימת תיוג</button>
-      <button class="action-btn" onclick="exportPDF()">📄 PDF</button>
-      <button class="action-btn" onclick="exportWord()">📝 Word</button>
-      <button class="action-btn" onclick="saveConversation()">💾 שמור שיחה</button>
-      <button class="action-btn" onclick="shareLink()">🔗 שתף קישור</button>
     </div>
 
     <div id="input-bar">
@@ -408,33 +414,71 @@ const SYSTEM_PROMPT = `אתה SafetyIL — עוזר בטיחות תעסוקתי�
 <div style="background:rgba(230,126,34,0.1);border:1px solid rgba(230,126,34,0.35);border-radius:8px;padding:10px 14px;color:#e67e22">⚠️ הסבר למה אין מידע זמין</div>`;
 
 const ROLE_PROMPTS = {
-  'עובד': `## הנחיות התאמה לתפקיד: עובד
-• שפה פשוטה וברורה — ללא מונחים משפטיים.
-• התמקד במה לעשות עכשיו בפועל: צעדים קונקרטיים.
-• הבהר מה מותר ומה אסור לעשות.
-• ציין מתי חייבים לעצור ולקרוא למנהל.
-• ציין את המקור החוקי העיקרי בלבד.`,
+  'עובד': `## ⚠️ כלל עליון — תפקיד: עובד בשטח
+שנה את כל פורמט התשובה לחלוטין עבור עובד:
 
-  'מנהל עבודה': `## הנחיות התאמה לתפקיד: מנהל עבודה
-• פרט את חובותיו החוקיות הספציפיות כמנהל עבודה.
-• הסבר מה עליו לוודא ולבדוק לפני תחילת כל עבודה.
-• הבהר את האחריות האישית שלו — כולל אחריות פלילית ואזרחית.
-• פרט נהלי תיעוד ודיווח: מה לתעד, מתי, ואיך.
-• כלול ציטוטים חוקיים רלוונטיים אך בצורה מובנת.`,
+פורמט חובה:
+<h3 style="color:#e2c47a;margin:8px 0 6px;font-size:15px">מה אתה צריך לעשות</h3>
+<ul style="margin:4px 0 10px;padding-right:20px;line-height:2.2">
+<li>כל צעד בשורה</li>
+</ul>
+<h3 style="color:#e74c3c;margin:10px 0 6px;font-size:15px">מה אסור בשום פנים</h3>
+<ul style="margin:4px 0 10px;padding-right:20px;line-height:2.2">
+<li>איסור</li>
+</ul>
+<div style="background:rgba(91,155,213,0.1);border:1px solid rgba(91,155,213,0.3);border-radius:8px;padding:10px 14px;margin:10px 0">
+<strong style="color:#74b9ff">מתי לקרוא למנהל מיד:</strong><br>
+<ul style="padding-right:18px;margin-top:4px;line-height:2">
+<li>מצב שמצריך עצירה</li>
+</ul>
+</div>
 
-  'ממונה בטיחות': `## הנחיות התאמה לתפקיד: ממונה בטיחות
-• ספק ציטוטים חוקיים מלאים ומדויקים: שם תקנה + מספר סעיף + תת-סעיף + שנה.
-• פרט את כל התקנות הרלוונטיות — גם אם חופפות.
-• כלול חובות פיקוח, ביקורת, ואכיפה של הממונה.
-• פרט דרישות הכשרה ותיעוד לכל צד.
-• ציין סנקציות וקנסות על אי-עמידה בדרישות.`,
+חוקי ברזל לתפקיד זה:
+❌ אסור בהחלט: מספרי סעיפים, שמות תקנות, תגיות "חובה חוקית" / "אסור לפי חוק" / "המלצה", שפה משפטית.
+✅ חובה: שפה יומיומית פשוטה כמו שמסביר לחבר. אורך קצר — עד 150 מילה. ממש מעשי.`,
 
-  'קבלן': `## הנחיות התאמה לתפקיד: קבלן
-• פרט את חובות הקבלן הספציפיות לפי חוק הבטיחות בישראל.
-• הסבר את האחריות החוזית והחוקית מול מזמין העבודה.
-• ציין אילו ביטוחים נדרשים על-פי חוק.
-• פרט חובות הדרכת עובדים ותיעודן.
-• כלול דרישות רישוי ואישורים הנדרשים מהקבלן.`
+  'מנהל עבודה': `## תפקיד: מנהל עבודה — ניהול ואחריות
+ספק תשובה מבנית בשלושה חלקים:
+
+חלק א׳ — לפני תחילת העבודה (רשימת בדיקה):
+מה המנהל חייב לוודא לפני שהעבודה מתחילה — ציוד, הדרכות, אישורים.
+
+חלק ב׳ — חובות חוקיות ואחריות אישית:
+מה החוק מחייב ממנהל עבודה. ציין מקור חוקי אחד ראשי. הדגש: "אם לא תוודא זאת — האחריות הפלילית/האזרחית עליך אישית".
+
+חלק ג׳ — מה לתעד:
+אילו מסמכים לנהל, טפסים לחתום, ומה לדווח ולמי.
+
+שפה: מקצועית אך ברורה. ציטוט חוקי אחד-שניים בלבד עם מספר סעיף.`,
+
+  'ממונה בטיחות': `## תפקיד: ממונה בטיחות — ניתוח חקיקתי מלא
+ספק ניתוח מקצועי מלא:
+
+• כל התקנות הרלוונטיות עם ציטוט מלא: שם תקנה + מספר סעיף + תת-סעיף + שנה — לכל טענה.
+• גם תקנות חופפות וגם תקנות תומכות.
+• חובות הממונה הספציפיות: פיקוח, ביקורת תקופתית, אכיפה פנים-ארגונית.
+• קנסות, עונשים וסנקציות על אי-עמידה.
+• דרישות תיעוד מפורטות: מה לשמור, כמה זמן, למי להגיש.
+• אם יש מחלוקת בין תקנות — ציין את הדין המחמיר.
+
+שפה: מקצועית לחלוטין. פורמט: כותרות ברורות לכל נושא. אין להשמיט פרטים.`,
+
+  'קבלן': `## תפקיד: קבלן — אחריות חוזית וחוקית
+מבנה תשובה ייעודי לקבלן:
+
+ביטוחים נדרשים (ציין אילו ספציפית):
+— ביטוח אחריות מקצועית, ביטוח עבודות, ביטוח צד ג׳, ביטוח עובדים. מה חובה לפי חוק.
+
+רישיונות ואישורים:
+— אילו רישיונות נדרשים לעבודה הספציפית הזו. מי מנפיק, מה תוקפו.
+
+חובות הדרכה:
+— אילו הדרכות חייבות להיות לעובדים של הקבלן לפני שנכנסים לאתר. מי אחראי: הקבלן או מזמין העבודה?
+
+אחריות מול מזמין העבודה:
+— מה "אחריות הקבלן" ומה "אחריות מזמין העבודה". מה קורה בתאונה — מי נושא באחריות?
+
+מקורות חוקיים: ציין סעיפים רלוונטיים לחוק קבלנים ולחוק הבטיחות.`
 };
 
 function setRole(btn, role) {
@@ -558,10 +602,6 @@ function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
 }
 
-function showActionBar() {
-  document.getElementById('action-bar').style.display = 'flex';
-}
-
 async function sendMessage() {
   if (isLoading) return;
   const input = document.getElementById('text-input');
@@ -597,7 +637,6 @@ async function sendMessage() {
     conversation.push({ role: 'assistant', content: stripTags(html) });
     addBotMsg(html);
     document.getElementById('error-banner').style.display = 'none';
-    showActionBar();
     autoSave();
   } catch(err) {
     removeTyping();
@@ -691,19 +730,31 @@ function closeChecklistModal() {
 
 function printChecklist() {
   const content = document.getElementById('checklist-content').innerHTML;
-  const win = window.open('', '_blank');
-  win.document.write(`<!DOCTYPE html><html dir="rtl" lang="he"><head><meta charset="UTF-8"><title>רשימת תיוג — SafetyIL</title>
-<style>body{font-family:Arial,sans-serif;direction:rtl;padding:20px;color:#222;max-width:800px;margin:0 auto}
-h1{color:#0d1f3c;border-bottom:2px solid #c9a84c;padding-bottom:8px;font-size:18px}
-h3{color:#162e55;font-size:15px;margin-top:18px} ul{padding-right:20px;line-height:2} li{margin-bottom:4px}
-.meta{color:#666;font-size:12px;margin-bottom:16px}
+  if (!content || content.includes('typing-dots')) { showToast('המתן לסיום יצירת הרשימה'); return; }
+  // Use iframe to avoid popup blocker
+  const iframe = document.createElement('iframe');
+  iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:800px;height:600px';
+  document.body.appendChild(iframe);
+  iframe.contentDocument.write(`<!DOCTYPE html><html dir="rtl" lang="he"><head><meta charset="UTF-8">
+<style>body{font-family:Arial,sans-serif;direction:rtl;padding:24px;color:#222;max-width:780px;margin:0 auto}
+h1{color:#0d1f3c;border-bottom:2px solid #c9a84c;padding-bottom:8px;font-size:18px;margin-bottom:6px}
+h3{color:#162e55;font-size:15px;margin-top:18px;margin-bottom:4px}
+h4{color:#333;font-size:13px;margin-top:12px}
+ul{padding-right:20px;line-height:2.1} li{margin-bottom:2px}
+.meta{color:#666;font-size:12px;margin-bottom:18px}
 *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+span[style*="#1a7a4a"]{background:#1a7a4a!important;color:white!important;padding:1px 6px;border-radius:3px;font-size:11px}
+span[style*="#c0392b"]{background:#c0392b!important;color:white!important;padding:1px 6px;border-radius:3px;font-size:11px}
 </style></head><body>
 <h1>🛡️ SafetyIL — רשימת תיוג</h1>
 <div class="meta">תפקיד: ${currentRole} | תאריך: ${new Date().toLocaleDateString('he-IL')}</div>
 ${content}</body></html>`);
-  win.document.close();
-  setTimeout(() => { win.focus(); win.print(); }, 400);
+  iframe.contentDocument.close();
+  setTimeout(() => {
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
+    setTimeout(() => document.body.removeChild(iframe), 1000);
+  }, 300);
 }
 
 function wordChecklist() {
@@ -788,7 +839,6 @@ function restoreConversation(index) {
   document.getElementById('messages').innerHTML = item.messagesHtml;
   document.getElementById('messages').scrollTop = 999999;
   closeHistory();
-  showActionBar();
   addSystemMsg(`📂 שיחה שוחזרה (${item.date} — ${item.role})`);
 }
 
@@ -841,7 +891,6 @@ window.addEventListener('DOMContentLoaded', () => {
         document.getElementById('messages').innerHTML = data.messagesHtml || '';
         document.getElementById('messages').scrollTop = 999999;
         window.history.replaceState({}, '', window.location.pathname);
-        showActionBar();
         setTimeout(() => addSystemMsg('🔗 שיחה שוחזרה מקישור משותף'), 100);
       }
     } catch(e) { /* silent fail */ }
