@@ -141,7 +141,7 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
 /* MODALS */
 .modal-wrap { display: none; position: fixed; inset: 0; z-index: 200; align-items: center; justify-content: center; padding: 20px; }
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 0; }
-.modal-box { position: relative; z-index: 1; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 14px; width: 100%; max-width: 720px; max-height: 82vh; display: flex; flex-direction: column; overflow: hidden; }
+.modal-box { position: relative; z-index: 1; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 14px; width: 100%; max-width: 760px; min-height: 400px; max-height: 88vh; display: flex; flex-direction: column; overflow: hidden; }
 .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); flex-shrink: 0; gap: 10px; }
 .modal-title { font-size: 14px; font-weight: 600; color: var(--gold-light); }
 .modal-actions { display: flex; gap: 7px; align-items: center; }
@@ -694,31 +694,78 @@ ul{padding-right:20px} h3,h4{font-family:Arial}
 }
 
 // ── CHECKLIST GENERATOR ──
+const CHECKLIST_SYSTEM = `אתה SafetyIL — עוזר בטיחות תעסוקתית ישראלי.
+תפקידך כרגע: לייצר רשימת תיוג מעשית על בסיס השיחה שהתקיימה.
+
+## כללי פורמט — HTML בלבד:
+<h3 style="color:#e2c47a;margin:14px 0 6px;font-size:15px;border-bottom:1px solid rgba(201,168,76,0.3);padding-bottom:4px">כותרת חלק</h3>
+<ul style="margin:4px 0 12px;padding-right:20px;line-height:2.1">
+<li>✅ פריט לביצוע</li>
+</ul>
+<div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:6px;padding:7px 12px;margin:6px 0;font-size:12.5px;color:#e2c47a">📋 מקור: שם תקנה + סעיף</div>
+
+## חוקי ברזל:
+- כל פריט מתחיל ב-✅
+- כל קטגוריה פותחת בכותרת h3
+- אחרי כל קטגוריה — תיבת מקור חוקי קצרה (div כנ"ל)
+- אסור markdown, backticks, JSON — HTML בלבד
+- הרשימה חייבת להיות מפורטת ומלאה — לפחות 4 קטגוריות, לפחות 4 פריטים בכל קטגוריה`;
+
+const CHECKLIST_PROMPTS = {
+  'עובד': `השיחה שלנו עסקה בנושאי בטיחות. כעת צור רשימת תיוג מפורטת לעובד בשטח עם ארבעה חלקים:
+1. ציוד מגן אישי נדרש (לפחות 5 פריטים עם ✅)
+2. בדיקות חובה לפני תחילת עבודה (לפחות 5 פריטים עם ✅)
+3. מה אסור לעשות בשום פנים (לפחות 4 פריטים עם ✅)
+4. מתי חייבים לעצור ולהזעיק עזרה (לפחות 4 פריטים עם ✅)
+שפה: פשוטה, ממש מעשית, ללא מינוח משפטי. אחרי כל חלק — מקור חוקי קצר.`,
+
+  'מנהל עבודה': `השיחה שלנו עסקה בנושאי בטיחות. כעת צור רשימת תיוג ניהולית מפורטת עם ארבעה חלקים:
+1. בדיקות חובה לפני תחילת העבודה — מה המנהל חייב לוודא (לפחות 5 פריטים עם ✅)
+2. תיעוד נדרש — אילו מסמכים, פרוטוקולים וחתימות (לפחות 4 פריטים עם ✅)
+3. חובות פיקוח במהלך העבודה (לפחות 4 פריטים עם ✅)
+4. נהלי דיווח ואחריות אישית — מה קורה אם לא עמדת בחובות (לפחות 3 פריטים עם ✅)
+אחרי כל חלק — מקור חוקי עם סעיף.`,
+
+  'ממונה בטיחות': `השיחה שלנו עסקה בנושאי בטיחות. כעת צור דוח ציות חקיקתי מפורט עם ארבעה חלקים:
+1. דרישות חקיקתיות — כל התקנות הרלוונטיות עם מספרי סעיפים (לפחות 5 פריטים עם ✅)
+2. חובות פיקוח ובקרה של הממונה (לפחות 4 פריטים עם ✅)
+3. תיעוד ודיווחים נדרשים על-פי חוק (לפחות 4 פריטים עם ✅)
+4. סנקציות וקנסות על אי-עמידה (לפחות 3 פריטים עם ✅ + סכומי קנסות אם ידועים)
+כל פריט עם ציטוט חוקי מדויק.`,
+
+  'קבלן': `השיחה שלנו עסקה בנושאי בטיחות. כעת צור רשימת תיוג לקבלן מפורטת עם ארבעה חלקים:
+1. ביטוחים נדרשים לפני כניסה לאתר (לפחות 4 פריטים עם ✅ — ציין אילו ביטוחים)
+2. רישיונות, אישורים ותעודות (לפחות 4 פריטים עם ✅)
+3. הדרכות עובדים — חובות הקבלן (לפחות 4 פריטים עם ✅)
+4. אחריות מול מזמין העבודה — מה הקבלן אחראי לו (לפחות 3 פריטים עם ✅)
+אחרי כל חלק — מקור חוקי עם סעיף.`
+};
+
 async function generateChecklist() {
   if (!conversation.length) { showToast('אנא שאל שאלה תחילה'); return; }
   document.getElementById('checklist-role-label').textContent = currentRole;
   document.getElementById('checklist-modal').style.display = 'flex';
-  document.getElementById('checklist-content').innerHTML = `<div style="display:flex;justify-content:center;padding:40px"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+  document.getElementById('checklist-content').innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;padding:40px;gap:12px"><div class="typing-dots"><span></span><span></span><span></span></div><div style="color:var(--text-muted);font-size:13px">מייצר רשימת תיוג...</div></div>`;
 
-  const prompts = {
-    'עובד': `בהתבסס על השיחה שלנו, צור רשימת תיוג מעשית לעובד בשטח. כלול: ציוד מגן אישי נדרש, בדיקות לפני תחילת עבודה, פעולות חובה בזמן העבודה, ומה לעשות במצב חירום. פורמט HTML: כותרות h3, רשימות ul עם li, הוסף ✅ לפני כל פריט.`,
-    'מנהל עבודה': `בהתבסס על השיחה שלנו, צור רשימת תיוג ניהולית. כלול: חובות המנהל לפי חוק, מסמכים לתיעוד, בדיקות לפני ובמהלך העבודה, נהלי דיווח. פורמט HTML: כותרות h3, רשימות ul עם li, הוסף ✅ לפני כל פריט.`,
-    'ממונה בטיחות': `בהתבסס על השיחה שלנו, צור דוח ציות חקיקתי. כלול: דרישות חוקיות עם סעיפים, נהלי ביקורת ופיקוח, תיעוד נדרש, סנקציות. פורמט HTML: כותרות h3, רשימות ul עם li, הוסף ✅ לפני כל פריט.`,
-    'קבלן': `בהתבסס על השיחה שלנו, צור רשימת תיוג לקבלן. כלול: ביטוחים נדרשים, רישיונות ואישורים, הדרכות עובדים, אחריות חוזית וחוקית. פורמט HTML: כותרות h3, רשימות ul עם li, הוסף ✅ לפני כל פריט.`
-  };
+  const conversationSummary = conversation.slice(-8).map(m =>
+    `${m.role === 'user' ? 'שאלה' : 'תשובה'}: ${m.content.substring(0, 300)}`
+  ).join('\n\n');
+
+  const userPrompt = `להלן תקציר השיחה שהתקיימה:\n\n${conversationSummary}\n\n---\n\n${CHECKLIST_PROMPTS[currentRole] || CHECKLIST_PROMPTS['עובד']}`;
 
   try {
     const resp = await fetch(`${API_BASE}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        system: SYSTEM_PROMPT,
-        messages: [...conversation.slice(-8), { role: 'user', content: prompts[currentRole] || prompts['עובד'] }],
-        max_tokens: 3000
+        system: CHECKLIST_SYSTEM,
+        messages: [{ role: 'user', content: userPrompt }],
+        max_tokens: 4000
       })
     });
     const data = await resp.json();
-    document.getElementById('checklist-content').innerHTML = sanitizeHtml(data.text || '<p>לא ניתן ליצור רשימת תיוג.</p>');
+    const html = sanitizeHtml(data.text || '');
+    document.getElementById('checklist-content').innerHTML = html || '<p style="color:#e67e22">לא התקבל תוכן — נסה שוב.</p>';
   } catch(e) {
     document.getElementById('checklist-content').innerHTML = '<p style="color:#e67e22">שגיאת חיבור — נסה שוב.</p>';
   }
