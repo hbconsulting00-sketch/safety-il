@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SafetyIL — עוזר בטיחות תעסוקתית</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&family=Frank+Ruhl+Libre:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0d1f3c;
+  --navy-mid: #162e55;
+  --navy-light: #1e3f72;
+  --gold: #c9a84c;
+  --gold-light: #e2c47a;
+  --gold-dim: #7a6030;
+  --white: #f5f2eb;
+  --white-dim: #d8d2c4;
+  --red: #c0392b;
+  --red-light: #e74c3c;
+  --green: #1a7a4a;
+  --green-light: #27ae60;
+  --surface: #112240;
+  --surface-2: #0a1628;
+  --border: rgba(201,168,76,0.2);
+  --border-strong: rgba(201,168,76,0.5);
+  --text-muted: #8899b4;
+  --radius: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--white); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+#header { background: var(--surface-2); border-bottom: 1px solid var(--border-strong); padding: 0 20px; display: flex; align-items: center; gap: 14px; height: 58px; flex-shrink: 0; }
+#logo { display: flex; align-items: center; gap: 10px; }
+#logo-icon { width: 34px; height: 34px; background: var(--gold); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--navy); font-size: 18px; }
+#logo-text { font-family: 'Frank Ruhl Libre', serif; font-size: 18px; color: var(--gold-light); }
+#logo-sub { font-size: 11px; color: var(--text-muted); font-weight: 300; }
+#header-right { margin-right: auto; display: flex; align-items: center; gap: 10px; }
+.status-pill { display: flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); font-size: 11px; color: var(--text-muted); }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green-light); animation: blink 2s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+#status-text { font-size: 11px; color: var(--text-muted); }
+
+#layout { display: flex; flex: 1; overflow: hidden; }
+
+/* SIDEBAR */
+#sidebar { width: 260px; background: var(--surface-2); border-left: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+#sidebar-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold-dim); padding: 14px 16px 10px; border-bottom: 1px solid var(--border); }
+#docs-list { flex: 1; overflow-y: auto; padding: 8px; }
+.doc-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 7px; font-size: 12.5px; color: var(--white-dim); cursor: pointer; transition: background 0.15s; border: 1px solid transparent; margin-bottom: 2px; }
+.doc-item:hover { background: rgba(201,168,76,0.07); }
+.doc-item.active { background: rgba(201,168,76,0.12); border-color: var(--border); color: var(--gold-light); }
+.doc-icon { font-size: 15px; flex-shrink: 0; }
+.doc-badge { margin-right: auto; font-size: 10px; padding: 2px 6px; border-radius: 10px; background: rgba(201,168,76,0.15); color: var(--gold-light); border: 1px solid var(--border); }
+.doc-badge.uploaded { background: rgba(26,122,74,0.2); color: var(--green-light); border-color: rgba(39,174,96,0.3); }
+.sidebar-section { padding: 10px 16px 6px; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--gold-dim); border-top: 1px solid var(--border); margin-top: 4px; }
+#upload-zone { margin: 8px; border: 1.5px dashed var(--border-strong); border-radius: var(--radius); padding: 16px; text-align: center; cursor: pointer; transition: all 0.2s; color: var(--text-muted); font-size: 12px; }
+#upload-zone:hover, #upload-zone.drag-over { border-color: var(--gold); background: rgba(201,168,76,0.06); color: var(--gold-light); }
+#upload-zone .up-icon { font-size: 22px; margin-bottom: 6px; display: block; }
+#file-input { display: none; }
+.doc-del { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; flex-shrink: 0; padding: 2px 4px; margin-right: auto; }
+.doc-del:hover { color: var(--red-light); }
+
+/* MAIN */
+#main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+#messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+#messages::-webkit-scrollbar { width: 4px; }
+#messages::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+.msg-row { display: flex; gap: 10px; align-items: flex-start; }
+.msg-row.user { flex-direction: row-reverse; }
+.avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+.avatar.bot { background: linear-gradient(135deg, var(--navy-light), var(--gold-dim)); color: var(--gold-light); border: 1px solid var(--border-strong); }
+.avatar.user { background: var(--navy-mid); color: var(--white-dim); border: 1px solid var(--border); }
+.bubble { border-radius: 14px; padding: 14px 18px; font-size: 14px; line-height: 1.75; }
+.bubble.user { max-width: 70%; background: var(--navy-mid); border: 1px solid var(--border); color: var(--white-dim); border-top-left-radius: 4px; }
+.bubble.bot { max-width: 88%; background: var(--surface); border: 1px solid var(--border); color: var(--white); border-top-right-radius: 4px; }
+.ans-main { font-size: 14px; line-height: 1.7; color: var(--white); }
+.ans-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(201,168,76,0.15); }
+.ans-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 5px; display: flex; align-items: center; gap: 5px; }
+.label-action { color: #5b9bd5; }
+.label-source { color: var(--gold); }
+.label-warn { color: #e67e22; }
+.ans-action { font-size: 13.5px; color: var(--white-dim); line-height: 1.6; }
+.ans-source { font-size: 12.5px; color: var(--gold-light); background: rgba(201,168,76,0.08); border: 1px solid rgba(201,168,76,0.2); border-radius: 6px; padding: 6px 10px; line-height: 1.5; }
+.ans-warn { font-size: 13px; background: rgba(192,57,43,0.12); border: 1px solid rgba(192,57,43,0.35); border-right: 3px solid var(--red-light); border-radius: 6px; padding: 8px 12px; color: #f39c8a; line-height: 1.6; }
+.ans-nodata { display: flex; align-items: flex-start; gap: 8px; font-size: 13.5px; color: #e67e22; background: rgba(230,126,34,0.1); border: 1px solid rgba(230,126,34,0.3); border-radius: 8px; padding: 10px 14px; }
+.user-context-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 3px 8px; background: rgba(91,155,213,0.15); border: 1px solid rgba(91,155,213,0.3); border-radius: 12px; color: #5b9bd5; margin-bottom: 8px; }
+.typing-dots { display: flex; align-items: center; gap: 4px; padding: 4px 0; }
+.typing-dots span { width: 7px; height: 7px; border-radius: 50%; background: var(--gold-dim); animation: bounce 1.2s ease-in-out infinite; }
+.typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes bounce { 0%,80%,100%{transform:scale(0.7);opacity:0.4} 40%{transform:scale(1);opacity:1} }
+
+#role-bar { display: flex; gap: 6px; padding: 10px 20px; border-top: 1px solid var(--border); background: var(--surface-2); flex-shrink: 0; align-items: center; }
+#role-label { font-size: 11px; color: var(--text-muted); margin-left: 4px; }
+.role-btn { padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); font-size: 11.5px; font-family: 'Heebo', sans-serif; cursor: pointer; transition: all 0.15s; }
+.role-btn.active, .role-btn:hover { background: rgba(201,168,76,0.12); border-color: var(--border-strong); color: var(--gold-light); }
+
+#quick-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 20px 10px; background: var(--surface-2); border-top: 1px solid var(--border); flex-shrink: 0; }
+#quick-title { width: 100%; font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; }
+.quick-btn { padding: 5px 11px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--white-dim); font-size: 12px; font-family: 'Heebo', sans-serif; cursor: pointer; transition: all 0.15s; }
+.quick-btn:hover { background: var(--surface); border-color: var(--border-strong); color: var(--white); }
+
+#input-bar { display: flex; gap: 10px; padding: 12px 20px; background: var(--surface-2); border-top: 1px solid var(--border-strong); align-items: flex-end; flex-shrink: 0; }
+#text-input { flex: 1; background: var(--navy); border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 10px 14px; color: var(--white); font-family: 'Heebo', sans-serif; font-size: 14px; outline: none; resize: none; min-height: 42px; max-height: 120px; line-height: 1.5; transition: border 0.15s; direction: rtl; }
+#text-input::placeholder { color: var(--text-muted); }
+#text-input:focus { border-color: var(--gold); }
+#send-btn { width: 42px; height: 42px; border-radius: 50%; background: var(--gold); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.15s, transform 0.1s; }
+#send-btn:hover { background: var(--gold-light); transform: scale(1.05); }
+#send-btn:disabled { background: var(--gold-dim); cursor: not-allowed; transform: none; }
+#send-btn svg { width: 16px; height: 16px; fill: var(--navy); }
+#disclaimer { font-size: 10.5px; color: var(--text-muted); text-align: center; padding: 4px 20px 6px; background: var(--surface-2); border-top: 1px solid var(--border); flex-shrink: 0; }
+#welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 10px; text-align: center; padding: 40px 30px; color: var(--text-muted); }
+#welcome-icon { font-size: 42px; margin-bottom: 6px; }
+#welcome h2 { font-family: 'Frank Ruhl Libre', serif; font-size: 22px; color: var(--gold-light); font-weight: 700; }
+#welcome p { font-size: 14px; line-height: 1.7; max-width: 360px; }
+.welcome-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 4px; }
+.welcome-tag { padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); font-size: 11.5px; color: var(--white-dim); }
+#docs-list::-webkit-scrollbar { width: 3px; }
+#docs-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* Error banner */
+#error-banner { display: none; background: rgba(192,57,43,0.15); border: 1px solid rgba(192,57,43,0.4); color: #f39c8a; font-size: 12px; padding: 8px 20px; text-align: center; flex-shrink: 0; }
+
+/* Content rendering */
+.md-h2 { font-size: 15.5px; font-weight: 700; color: var(--gold-light); margin: 16px 0 6px; padding-bottom: 5px; border-bottom: 1px solid rgba(201,168,76,0.25); line-height: 1.4; }
+.md-h2:first-child { margin-top: 4px; }
+.md-h3 { font-size: 14px; font-weight: 600; color: var(--white); margin: 12px 0 4px; }
+.md-p { font-size: 14px; line-height: 1.8; color: var(--white); margin: 3px 0; }
+.md-li { display: flex; align-items: flex-start; gap: 8px; font-size: 14px; line-height: 1.8; color: var(--white-dim); padding: 2px 0; }
+.md-li-dot { color: var(--gold); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+.md-space { height: 6px; }
+.tag-legal { display: inline-block; background: rgba(26,122,74,0.22); color: #2ecc71; border: 1px solid rgba(46,204,113,0.4); border-radius: 4px; padding: 1px 8px; font-size: 11.5px; font-weight: 700; margin: 0 2px; vertical-align: middle; }
+.tag-forbidden { display: inline-block; background: rgba(192,57,43,0.2); color: #ff6b6b; border: 1px solid rgba(231,76,60,0.45); border-radius: 4px; padding: 1px 8px; font-size: 11.5px; font-weight: 700; margin: 0 2px; vertical-align: middle; }
+.tag-recommend { display: inline-block; background: rgba(91,155,213,0.18); color: #74b9ff; border: 1px solid rgba(91,155,213,0.45); border-radius: 4px; padding: 1px 8px; font-size: 11.5px; font-weight: 700; margin: 0 2px; vertical-align: middle; }
+.citation-box { background: rgba(201,168,76,0.07); border: 1px solid rgba(201,168,76,0.22); border-right: 3px solid var(--gold); border-radius: 6px; padding: 7px 12px; font-size: 13px; color: var(--gold-light); line-height: 1.65; margin: 4px 0; }
+.ans-clarify { font-size: 14px; color: #74b9ff; background: rgba(91,155,213,0.1); border: 1px solid rgba(91,155,213,0.3); border-radius: 8px; padding: 12px 16px; }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div id="logo">
+    <div id="logo-icon">🛡️</div>
+    <div>
+      <div id="logo-text">SafetyIL</div>
+      <div id="logo-sub">עוזר בטיחות תעסוקתית — מבוסס חקיקה ישראלית</div>
+    </div>
+  </div>
+  <div id="header-right">
+    <div class="status-pill"><div class="status-dot"></div><span id="status-text">מחובר לשרת</span></div>
+  </div>
+</div>
+
+<div id="error-banner" id="err">⚠️ שגיאת חיבור — ודא שהשרת פועל: <code>node server.js</code></div>
+
+<div id="layout">
+  <div id="sidebar">
+    <div id="sidebar-title">📚 בסיס ידע</div>
+    <div id="docs-list">
+      <div class="sidebar-section">חקיקה ורגולציה</div>
+      <div class="doc-item active"><span class="doc-icon">📜</span> פקודת הבטיחות בעבודה <span class="doc-badge">תש"ל-1970</span></div>
+      <div class="doc-item active"><span class="doc-icon">🔧</span> עבודה בגובה<span class="doc-badge">תשס"ז-2007</span></div>
+      <div class="doc-item active"><span class="doc-icon">🏗️</span> עבודות בנייה<span class="doc-badge">תשמ"ח-1988</span></div>
+      <div class="doc-item active"><span class="doc-icon">⚗️</span> חומרים מסוכנים<span class="doc-badge">תשמ"ד-1984</span></div>
+      <div class="doc-item active"><span class="doc-icon">⚡</span> חשמל — תקנות הבטיחות<span class="doc-badge">תוקף</span></div>
+      <div class="doc-item active"><span class="doc-icon">🦺</span> ציוד מגן אישי<span class="doc-badge">תוקף</span></div>
+      <div class="doc-item active"><span class="doc-icon">🛡️</span> ממונה על הבטיחות<span class="doc-badge">תשמ"ו-1986</span></div>
+      <div class="doc-item active"><span class="doc-icon">🚧</span> מכונות הרמה / עגורנים<span class="doc-badge">תשנ"ג-1993</span></div>
+      <div class="doc-item active"><span class="doc-icon">🧯</span> כיבוי אש<span class="doc-badge">תוקף</span></div>
+      <div class="doc-item active"><span class="doc-icon">🔬</span> ניטור סביבתי<span class="doc-badge">תש"ן-1990</span></div>
+      <div id="uploaded-docs-section" style="display:none">
+        <div class="sidebar-section">📁 מסמכי חברה</div>
+        <div id="uploaded-docs-list"></div>
+      </div>
+    </div>
+    <div id="upload-zone" onclick="document.getElementById('file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+      <span class="up-icon">⬆️</span>
+      <strong style="font-size:12.5px;color:var(--white-dim)">העלה נהלי חברה</strong>
+      <div style="margin-top:4px;font-size:11px">PDF · Word · TXT</div>
+    </div>
+    <input type="file" id="file-input" accept=".pdf,.doc,.docx,.txt" multiple onchange="handleFileInput(this.files)">
+  </div>
+
+  <div id="main">
+    <div id="messages">
+      <div id="welcome">
+        <div id="welcome-icon">🛡️</div>
+        <h2>עוזר בטיחות תעסוקתית</h2>
+        <p>שאל כל שאלת בטיחות — תקבל תשובה מבוססת חקיקה ישראלית, עם הפניה לסעיף ותקנה מדויקת.</p>
+        <div class="welcome-tags">
+          <span class="welcome-tag">פקודת הבטיחות בעבודה</span>
+          <span class="welcome-tag">עבודה בגובה</span>
+          <span class="welcome-tag">חומרים מסוכנים</span>
+          <span class="welcome-tag">ציוד מגן אישי</span>
+          <span class="welcome-tag">עבודות בנייה</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="role-bar">
+      <span id="role-label">אני:</span>
+      <button class="role-btn active" onclick="setRole(this,'עובד')">👷 עובד</button>
+      <button class="role-btn" onclick="setRole(this,'מנהל עבודה')">👔 מנהל</button>
+      <button class="role-btn" onclick="setRole(this,'ממונה בטיחות')">🛡️ ממונה בטיחות</button>
+      <button class="role-btn" onclick="setRole(this,'קבלן')">🔨 קבלן</button>
+    </div>
+
+    <div id="quick-row">
+      <div id="quick-title">שאלות נפוצות</div>
+      <button class="quick-btn" onclick="askQ('איזה ציוד מגן אישי נדרש לעבודה עם דיסק חיתוך?')">🔴 ציוד מגן — דיסק חיתוך</button>
+      <button class="quick-btn" onclick="askQ('מה צריך לבדוק לפני עבודה בגובה?')">🏗️ בדיקות לפני עבודה בגובה</button>
+      <button class="quick-btn" onclick="askQ('האם עובד קבלן יכול להתחיל אם הדרכת הכניסה שלו לא בתוקף?')">📋 הדרכה לא בתוקף</button>
+      <button class="quick-btn" onclick="askQ('מה עושים אם זיהיתי מפגע ואין מנהל זמין?')">⚠️ מפגע ללא מנהל</button>
+      <button class="quick-btn" onclick="askQ('מה חובות המעסיק לפי פקודת הבטיחות בעבודה?')">⚖️ חובות מעסיק</button>
+      <button class="quick-btn" onclick="askQ('מה הדרישות לעבודה עם חומרים מסוכנים בישראל?')">☣️ חומרים מסוכנים</button>
+    </div>
+
+    <div id="input-bar">
+      <textarea id="text-input" placeholder="שאל שאלת בטיחות..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <button id="send-btn" onclick="sendMessage()" disabled>
+        <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+      </button>
+    </div>
+    <div id="disclaimer">⚠️ הכלי מספק מידע כללי ואינו מהווה ייעוץ משפטי. במקרה ספק — פנה לממונה הבטיחות.</div>
+  </div>
+</div>
+
+<script>
+const API_BASE = 'http://localhost:3000';
+let currentRole = 'עובד';
+let isLoading = false;
+let uploadedDocs = [];
+let conversation = [];
+
+const SYSTEM_PROMPT = `אתה SafetyIL — עוזר בטיחות תעסוקתית ישראלי מקצועי ומוסמך.
+
+## עקרון מנחה
+לכל שאלת בטיחות — תשובה מקצועית, מפורטת ומדויקת.
+
+## מקורות בלעדיים
+1. פקודת הבטיחות בעבודה [נוסח חדש], תש"ל-1970
+2. תקנות הבטיחות בעבודה (עבודה בגובה), תשס"ז-2007
+3. תקנות הבטיחות בעבודה (עבודות בנייה), תשמ"ח-1988
+4. תקנות הבטיחות בעבודה (ניטור סביבתי וניטור ביולוגי), תש"ן-1990
+5. תקנות הבטיחות בעבודה (גהות תעסוקתית ואבק מזיק), תשמ"ד-1984
+6. תקנות הבטיחות בעבודה (עגורנאים, מפעילי מלגזות, ומכונות הרמה), תשנ"ג-1993
+7. תקנות ארגון הפיקוח על העבודה (ממונה על הבטיחות), תשנ"ו-1996
+8. תקנות החשמל (בטיחות)
+9. תקנות כיבוי אש
+10. הנחיות המוסד לבטיחות ולגיהות (מבט"ח)
+11. פרסומי משרד העבודה, הרווחה והשירותים החברתיים
+אם הועלו מסמכי נהלים פנימיים — הם מהווים מקור נוסף.
+
+## כללים מחייבים
+1. ענה רק על שאלות בטיחות תעסוקתית.
+2. לכל דרישה — ציין מקור מדויק: שם תקנה מלא + מספר סעיף + תת-סעיף + שנה.
+3. סמן ליד כל פריט: חובה חוקית / המלצה מקצועית / אסור לפי חוק.
+4. אם חלות כמה תקנות — ציין את כולן.
+5. בסוף כל תשובה — הוסף "פעולה נדרשת" עם צעדים מעשיים.
+6. אם השאלה מעורפלת — שאל שאלת הבהרה אחת.
+7. אם אין מידע בחקיקה — אמור זאת. אל תמציא.
+8. במצב סכנה מיידית — הבלט זאת בראש התשובה.
+
+## פורמט פלט — HTML בלבד
+החזר HTML בלבד. אסור JSON. אסור markdown. אסור backticks. אסור תגיות html/head/body/script/style.
+
+השתמש אך ורק בתגיות הבאות:
+
+כותרת ראשית:
+<h3 style="color:#e2c47a;margin:16px 0 8px;font-size:15px;border-bottom:1px solid rgba(201,168,76,0.3);padding-bottom:4px">כותרת</h3>
+
+כותרת משנה:
+<h4 style="color:#d8d2c4;margin:10px 0 5px;font-size:13.5px">כותרת</h4>
+
+פסקה:
+<p style="margin:5px 0;line-height:1.85">טקסט</p>
+
+רשימה:
+<ul style="margin:4px 0 8px 0;padding-right:20px;line-height:2">
+<li>פריט</li>
+</ul>
+
+תג חובה חוקית (מוסיפים ליד הפריט):
+<span style="background:#1a7a4a;color:white;padding:2px 8px;border-radius:4px;font-size:12px;margin-left:6px;white-space:nowrap">חובה חוקית</span>
+
+תג אסור לפי חוק:
+<span style="background:#c0392b;color:white;padding:2px 8px;border-radius:4px;font-size:12px;margin-left:6px;white-space:nowrap">אסור לפי חוק</span>
+
+תג המלצה מקצועית:
+<span style="background:#185FA5;color:white;padding:2px 8px;border-radius:4px;font-size:12px;margin-left:6px;white-space:nowrap">המלצה</span>
+
+מקור חוקי (לכל ציטוט נפרד):
+<div style="background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.4);border-radius:6px;padding:8px 12px;margin:6px 0;font-size:13px;color:#e2c47a">📋 מקור: שם תקנה + סעיף + שנה</div>
+
+אזהרה:
+<div style="background:rgba(192,57,43,0.15);border-right:3px solid #e74c3c;border-radius:6px;padding:8px 12px;margin:8px 0;color:#f39c8a">⛔ טקסט אזהרה</div>
+
+פעולה נדרשת — בסוף כל תשובה חובה:
+<div style="background:rgba(91,155,213,0.08);border:1px solid rgba(91,155,213,0.3);border-radius:6px;padding:10px 14px;margin:14px 0 4px">
+<div style="color:#74b9ff;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">▶ פעולה נדרשת</div>
+<ul style="margin:0;padding-right:18px;line-height:2">
+<li>צעד ראשון</li>
+<li>צעד שני</li>
+</ul>
+</div>
+
+שאלת הבהרה (כשהשאלה מעורפלת):
+<div style="background:rgba(91,155,213,0.1);border:1px solid rgba(91,155,213,0.35);border-radius:8px;padding:12px 16px;color:#74b9ff">❓ שאלת ההבהרה</div>
+
+מצב ללא מידע:
+<div style="background:rgba(230,126,34,0.1);border:1px solid rgba(230,126,34,0.35);border-radius:8px;padding:10px 14px;color:#e67e22">⚠️ הסבר למה אין מידע זמין</div>`;
+
+const ROLE_PROMPTS = {
+  'עובד': `## הנחיות התאמה לתפקיד: עובד
+המשתמש הוא עובד בשטח. התאם את התשובה בהתאם:
+• שפה פשוטה וברורה — ללא מונחים משפטיים או טכניים. אם מוכרחים להשתמש במונח — הסבר אותו.
+• התמקד במה לעשות עכשיו בפועל: צעדים קונקרטיים, לא תיאוריה.
+• הבהר בבירור מה מותר ומה אסור לעשות.
+• ציין מתי חייבים לעצור את העבודה ולקרוא למנהל.
+• אל תציף במקורות חוקיים — ציין את העיקרי בלבד.`,
+
+  'מנהל עבודה': `## הנחיות התאמה לתפקיד: מנהל עבודה
+המשתמש הוא מנהל עבודה. התאם את התשובה בהתאם:
+• פרט את חובותיו החוקיות הספציפיות כמנהל עבודה.
+• הסבר מה עליו לוודא ולבדוק לפני תחילת כל עבודה.
+• הבהר את האחריות האישית שלו אם מתרחש אירוע — כולל אחריות פלילית ואזרחית.
+• פרט נהלי תיעוד ודיווח: מה לתעד, מתי, ואיך.
+• כלול ציטוטים חוקיים רלוונטיים אך בצורה מובנת.`,
+
+  'ממונה בטיחות': `## הנחיות התאמה לתפקיד: ממונה בטיחות
+המשתמש הוא ממונה בטיחות מוסמך. התאם את התשובה בהתאם:
+• ספק ציטוטים חוקיים מלאים ומדויקים: שם תקנה + מספר סעיף + תת-סעיף + שנה.
+• פרט את כל התקנות הרלוונטיות — גם אם חופפות.
+• כלול חובות פיקוח, ביקורת, ואכיפה של הממונה.
+• פרט דרישות הכשרה ותיעוד לכל צד.
+• ציין סנקציות וקנסות על אי-עמידה בדרישות.
+• רמת פירוט מרבית — זהו המשתמש המקצועי ביותר.`,
+
+  'קבלן': `## הנחיות התאמה לתפקיד: קבלן
+המשתמש הוא קבלן. התאם את התשובה בהתאם:
+• פרט את חובות הקבלן הספציפיות לפי חוק הבטיחות בישראל.
+• הסבר את האחריות החוזית והחוקית מול מזמין העבודה.
+• ציין אילו ביטוחים נדרשים על-פי חוק (אחריות מקצועית, עבודות, צד ג').
+• פרט חובות הדרכת עובדים ותיעודן.
+• כלול דרישות רישוי ואישורים הנדרשים מהקבלן.`
+};
+
+function setRole(btn, role) {
+  currentRole = role;
+  document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  document.getElementById('send-btn').disabled = !el.value.trim() || isLoading;
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function askQ(q) {
+  const inp = document.getElementById('text-input');
+  inp.value = q; autoResize(inp); sendMessage();
+}
+
+// File upload
+function handleDragOver(e) { e.preventDefault(); document.getElementById('upload-zone').classList.add('drag-over'); }
+function handleDragLeave() { document.getElementById('upload-zone').classList.remove('drag-over'); }
+function handleDrop(e) { e.preventDefault(); document.getElementById('upload-zone').classList.remove('drag-over'); uploadFiles(e.dataTransfer.files); }
+function handleFileInput(files) { uploadFiles(files); }
+
+async function uploadFiles(files) {
+  const fd = new FormData();
+  Array.from(files).forEach(f => fd.append('files', f));
+  try {
+    const r = await fetch(`${API_BASE}/api/upload`, { method: 'POST', body: fd });
+    const data = await r.json();
+    if (data.files) {
+      data.files.forEach(f => { if (!uploadedDocs.find(d => d.name === f.name)) uploadedDocs.push(f); });
+      renderUploadedDocs();
+      addSystemMsg(`✅ ${data.files.length} קובץ/ים הועלו ויילקחו בחשבון בתשובות.`);
+    }
+  } catch(e) { addSystemMsg('❌ שגיאה בהעלאת הקבצים — ודא שהשרת פועל.'); }
+}
+
+function renderUploadedDocs() {
+  const sec = document.getElementById('uploaded-docs-section');
+  const list = document.getElementById('uploaded-docs-list');
+  sec.style.display = uploadedDocs.length ? 'block' : 'none';
+  list.innerHTML = uploadedDocs.map((d, i) => `
+    <div class="doc-item" style="background:rgba(26,122,74,0.1);border-color:rgba(39,174,96,0.2)">
+      <span class="doc-icon">📄</span>
+      <span style="font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.name}</span>
+      <button class="doc-del" onclick="removeDoc(${i})">✕</button>
+    </div>`).join('');
+}
+
+function removeDoc(i) { uploadedDocs.splice(i, 1); renderUploadedDocs(); }
+
+// Messages
+function hideWelcome() { const w = document.getElementById('welcome'); if (w) w.remove(); }
+
+function addUserMsg(text) {
+  hideWelcome();
+  const msgs = document.getElementById('messages');
+  const roleIcon = {'עובד':'👷','מנהל עבודה':'👔','ממונה בטיחות':'🛡️','קבלן':'🔨'}[currentRole] || '👤';
+  const el = document.createElement('div');
+  el.className = 'msg-row user';
+  el.innerHTML = `<div class="avatar user">${roleIcon}</div>
+    <div class="bubble user">
+      <div class="user-context-tag">👤 ${currentRole}</div>
+      <div>${escHtml(text)}</div>
+    </div>`;
+  msgs.appendChild(el); msgs.scrollTop = msgs.scrollHeight;
+}
+
+function addSystemMsg(text) {
+  hideWelcome();
+  const msgs = document.getElementById('messages');
+  const el = document.createElement('div');
+  el.className = 'msg-row';
+  el.innerHTML = `<div class="avatar bot">🛡️</div><div class="bubble bot" style="font-size:13px;color:var(--text-muted)">${text}</div>`;
+  msgs.appendChild(el); msgs.scrollTop = msgs.scrollHeight;
+}
+
+function addTyping() {
+  hideWelcome();
+  const msgs = document.getElementById('messages');
+  const el = document.createElement('div');
+  el.className = 'msg-row'; el.id = 'typing-row';
+  el.innerHTML = `<div class="avatar bot">🛡️</div><div class="bubble bot"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+  msgs.appendChild(el); msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeTyping() { const t = document.getElementById('typing-row'); if (t) t.remove(); }
+
+function addBotMsg(html) {
+  const msgs = document.getElementById('messages');
+  const el = document.createElement('div');
+  el.className = 'msg-row';
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble bot';
+  bubble.innerHTML = sanitizeHtml(html);
+  el.appendChild(Object.assign(document.createElement('div'), {className:'avatar bot', textContent:'🛡️'}));
+  el.appendChild(bubble);
+  msgs.appendChild(el);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function sanitizeHtml(html) {
+  return String(html)
+    .replace(/```html\s*/gi,'').replace(/```/g,'')
+    .replace(/<script[\s\S]*?<\/script>/gi,'')
+    .replace(/<style[\s\S]*?<\/style>/gi,'')
+    .replace(/\bon\w+\s*=\s*["'][^"']*["']/gi,'')
+    .replace(/javascript\s*:/gi,'');
+}
+
+function stripTags(html) {
+  return String(html).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+}
+
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+async function sendMessage() {
+  if (isLoading) return;
+  const input = document.getElementById('text-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = ''; autoResize(input);
+  document.getElementById('send-btn').disabled = true;
+  isLoading = true;
+
+  addUserMsg(text);
+  conversation.push({ role: 'user', content: text });
+  addTyping();
+
+  const docsCtx = uploadedDocs.length
+    ? `\n\n## מסמכי נהלים פנימיים שהועלו:\n${uploadedDocs.map(d=>`### ${d.name}\n${d.content}`).join('\n\n')}`
+    : '';
+
+  try {
+    const resp = await fetch(`${API_BASE}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system: SYSTEM_PROMPT + docsCtx + `\n\n## תפקיד המשתמש: ${currentRole}\n\n` + (ROLE_PROMPTS[currentRole] || ''),
+        messages: conversation.slice(-8),
+        max_tokens: 4000
+      })
+    });
+
+    const data = await resp.json();
+    const html = data.text || '<div style="color:#e67e22">⚠️ לא התקבלה תשובה מהשרת.</div>';
+    removeTyping();
+
+    conversation.push({ role: 'assistant', content: stripTags(html) });
+    addBotMsg(html);
+    document.getElementById('error-banner').style.display = 'none';
+  } catch(err) {
+    removeTyping();
+    document.getElementById('error-banner').style.display = 'block';
+    addBotMsg('<div style="color:#e67e22">⚠️ שגיאת חיבור לשרת. ודא שהשרת פועל.</div>');
+  }
+  isLoading = false;
+}
+
+// Check server on load
+fetch(`${API_BASE}/`)
+  .then(r => {
+    if (r.ok) document.getElementById('status-text').textContent = 'מחובר לשרת';
+    else throw new Error();
+  })
+  .catch(() => {
+    document.getElementById('status-text').textContent = 'שרת לא פעיל';
+    document.querySelector('.status-dot').style.background = '#e74c3c';
+  });
+</script>
+</body>
+</html>
