@@ -6,6 +6,7 @@
 <title>SafetyIL — עוזר בטיחות תעסוקתית</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&family=Frank+Ruhl+Libre:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
 <style>
 :root {
   --navy: #0d1f3c;
@@ -40,6 +41,8 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
 .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green-light); animation: blink 2s ease-in-out infinite; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
 #status-text { font-size: 11px; color: var(--text-muted); }
+.hist-header-btn { padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); font-size: 12px; font-family: 'Heebo', sans-serif; cursor: pointer; transition: all 0.15s; }
+.hist-header-btn:hover { background: rgba(201,168,76,0.1); border-color: var(--border-strong); color: var(--gold-light); }
 
 #layout { display: flex; flex: 1; overflow: hidden; }
 
@@ -74,22 +77,12 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
 .bubble { border-radius: 14px; padding: 14px 18px; font-size: 14px; line-height: 1.75; }
 .bubble.user { max-width: 70%; background: var(--navy-mid); border: 1px solid var(--border); color: var(--white-dim); border-top-left-radius: 4px; }
 .bubble.bot { max-width: 88%; background: var(--surface); border: 1px solid var(--border); color: var(--white); border-top-right-radius: 4px; }
-.ans-main { font-size: 14px; line-height: 1.7; color: var(--white); }
-.ans-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(201,168,76,0.15); }
-.ans-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 5px; display: flex; align-items: center; gap: 5px; }
-.label-action { color: #5b9bd5; }
-.label-source { color: var(--gold); }
-.label-warn { color: #e67e22; }
-.ans-action { font-size: 13.5px; color: var(--white-dim); line-height: 1.6; }
-.ans-source { font-size: 12.5px; color: var(--gold-light); background: rgba(201,168,76,0.08); border: 1px solid rgba(201,168,76,0.2); border-radius: 6px; padding: 6px 10px; line-height: 1.5; }
-.ans-warn { font-size: 13px; background: rgba(192,57,43,0.12); border: 1px solid rgba(192,57,43,0.35); border-right: 3px solid var(--red-light); border-radius: 6px; padding: 8px 12px; color: #f39c8a; line-height: 1.6; }
-.ans-nodata { display: flex; align-items: flex-start; gap: 8px; font-size: 13.5px; color: #e67e22; background: rgba(230,126,34,0.1); border: 1px solid rgba(230,126,34,0.3); border-radius: 8px; padding: 10px 14px; }
-.user-context-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 3px 8px; background: rgba(91,155,213,0.15); border: 1px solid rgba(91,155,213,0.3); border-radius: 12px; color: #5b9bd5; margin-bottom: 8px; }
 .typing-dots { display: flex; align-items: center; gap: 4px; padding: 4px 0; }
 .typing-dots span { width: 7px; height: 7px; border-radius: 50%; background: var(--gold-dim); animation: bounce 1.2s ease-in-out infinite; }
 .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
 .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
 @keyframes bounce { 0%,80%,100%{transform:scale(0.7);opacity:0.4} 40%{transform:scale(1);opacity:1} }
+.user-context-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 3px 8px; background: rgba(91,155,213,0.15); border: 1px solid rgba(91,155,213,0.3); border-radius: 12px; color: #5b9bd5; margin-bottom: 8px; }
 
 #role-bar { display: flex; gap: 6px; padding: 10px 20px; border-top: 1px solid var(--border); background: var(--surface-2); flex-shrink: 0; align-items: center; }
 #role-label { font-size: 11px; color: var(--text-muted); margin-left: 4px; }
@@ -101,6 +94,12 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
 .quick-btn { padding: 5px 11px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--white-dim); font-size: 12px; font-family: 'Heebo', sans-serif; cursor: pointer; transition: all 0.15s; }
 .quick-btn:hover { background: var(--surface); border-color: var(--border-strong); color: var(--white); }
 
+/* ACTION BAR */
+#action-bar { display: none; gap: 6px; padding: 6px 20px 8px; background: var(--surface-2); border-top: 1px solid var(--border); flex-shrink: 0; flex-wrap: wrap; align-items: center; }
+#action-bar-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; width: 100%; }
+.action-btn { padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border-strong); background: rgba(201,168,76,0.06); color: var(--gold-light); font-size: 12px; font-family: 'Heebo', sans-serif; cursor: pointer; transition: all 0.15s; }
+.action-btn:hover { background: rgba(201,168,76,0.15); border-color: var(--gold); }
+
 #input-bar { display: flex; gap: 10px; padding: 12px 20px; background: var(--surface-2); border-top: 1px solid var(--border-strong); align-items: flex-end; flex-shrink: 0; }
 #text-input { flex: 1; background: var(--navy); border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 10px 14px; color: var(--white); font-family: 'Heebo', sans-serif; font-size: 14px; outline: none; resize: none; min-height: 42px; max-height: 120px; line-height: 1.5; transition: border 0.15s; direction: rtl; }
 #text-input::placeholder { color: var(--text-muted); }
@@ -110,6 +109,7 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
 #send-btn:disabled { background: var(--gold-dim); cursor: not-allowed; transform: none; }
 #send-btn svg { width: 16px; height: 16px; fill: var(--navy); }
 #disclaimer { font-size: 10.5px; color: var(--text-muted); text-align: center; padding: 4px 20px 6px; background: var(--surface-2); border-top: 1px solid var(--border); flex-shrink: 0; }
+
 #welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 10px; text-align: center; padding: 40px 30px; color: var(--text-muted); }
 #welcome-icon { font-size: 42px; margin-bottom: 6px; }
 #welcome h2 { font-family: 'Frank Ruhl Libre', serif; font-size: 22px; color: var(--gold-light); font-weight: 700; }
@@ -119,7 +119,6 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
 #docs-list::-webkit-scrollbar { width: 3px; }
 #docs-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-/* Error banner */
 #error-banner { display: none; background: rgba(192,57,43,0.15); border: 1px solid rgba(192,57,43,0.4); color: #f39c8a; font-size: 12px; padding: 8px 20px; text-align: center; flex-shrink: 0; }
 
 /* Content rendering */
@@ -129,12 +128,63 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
 .md-p { font-size: 14px; line-height: 1.8; color: var(--white); margin: 3px 0; }
 .md-li { display: flex; align-items: flex-start; gap: 8px; font-size: 14px; line-height: 1.8; color: var(--white-dim); padding: 2px 0; }
 .md-li-dot { color: var(--gold); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
-.md-space { height: 6px; }
 .tag-legal { display: inline-block; background: rgba(26,122,74,0.22); color: #2ecc71; border: 1px solid rgba(46,204,113,0.4); border-radius: 4px; padding: 1px 8px; font-size: 11.5px; font-weight: 700; margin: 0 2px; vertical-align: middle; }
 .tag-forbidden { display: inline-block; background: rgba(192,57,43,0.2); color: #ff6b6b; border: 1px solid rgba(231,76,60,0.45); border-radius: 4px; padding: 1px 8px; font-size: 11.5px; font-weight: 700; margin: 0 2px; vertical-align: middle; }
 .tag-recommend { display: inline-block; background: rgba(91,155,213,0.18); color: #74b9ff; border: 1px solid rgba(91,155,213,0.45); border-radius: 4px; padding: 1px 8px; font-size: 11.5px; font-weight: 700; margin: 0 2px; vertical-align: middle; }
 .citation-box { background: rgba(201,168,76,0.07); border: 1px solid rgba(201,168,76,0.22); border-right: 3px solid var(--gold); border-radius: 6px; padding: 7px 12px; font-size: 13px; color: var(--gold-light); line-height: 1.65; margin: 4px 0; }
 .ans-clarify { font-size: 14px; color: #74b9ff; background: rgba(91,155,213,0.1); border: 1px solid rgba(91,155,213,0.3); border-radius: 8px; padding: 12px 16px; }
+
+/* MODALS */
+.modal-wrap { display: none; position: fixed; inset: 0; z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 0; }
+.modal-box { position: relative; z-index: 1; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 14px; width: 100%; max-width: 720px; max-height: 82vh; display: flex; flex-direction: column; overflow: hidden; }
+.modal-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); flex-shrink: 0; gap: 10px; }
+.modal-title { font-size: 14px; font-weight: 600; color: var(--gold-light); }
+.modal-actions { display: flex; gap: 7px; align-items: center; }
+.modal-btn { padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border-strong); background: rgba(201,168,76,0.08); color: var(--gold-light); font-size: 12px; font-family: 'Heebo', sans-serif; cursor: pointer; transition: all 0.15s; }
+.modal-btn:hover { background: rgba(201,168,76,0.2); }
+.modal-close { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); background: transparent; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; transition: all 0.15s; flex-shrink: 0; }
+.modal-close:hover { background: rgba(255,255,255,0.07); color: var(--white); }
+.modal-body { flex: 1; overflow-y: auto; padding: 16px 18px; color: var(--white); font-size: 14px; line-height: 1.75; }
+.modal-body::-webkit-scrollbar { width: 4px; }
+.modal-body::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+
+/* History list */
+.hist-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 8px; cursor: pointer; transition: background 0.15s; }
+.hist-item:hover { background: rgba(201,168,76,0.07); }
+.hist-info { flex: 1; min-width: 0; }
+.hist-title { font-size: 13.5px; color: var(--white-dim); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hist-meta { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-muted); }
+.hist-del { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 15px; padding: 4px 6px; transition: color 0.15s; flex-shrink: 0; }
+.hist-del:hover { color: var(--red-light); }
+.hist-empty { text-align: center; color: var(--text-muted); padding: 40px 20px; font-size: 13px; line-height: 1.8; }
+
+/* Toast */
+@keyframes toast-in { from{opacity:0;transform:translateX(-50%) translateY(8px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+@keyframes toast-out { from{opacity:1} to{opacity:0} }
+
+/* Print header (hidden normally) */
+#print-header { display: none; }
+
+/* PRINT */
+@media print {
+  #print-header { display: block !important; padding-bottom: 12px; margin-bottom: 20px; border-bottom: 2px solid #c9a84c; font-family: Arial, sans-serif; }
+  #header, #sidebar, #role-bar, #quick-row, #action-bar, #input-bar,
+  #disclaimer, #error-banner, #header-right, #checklist-modal, #history-modal { display: none !important; }
+
+  body { background: white !important; color: #111 !important; height: auto !important; overflow: visible !important; }
+  #layout { display: block !important; height: auto !important; overflow: visible !important; }
+  #main { display: block !important; height: auto !important; overflow: visible !important; }
+  #messages { overflow: visible !important; height: auto !important; padding: 0 !important; gap: 10px !important; display: flex !important; flex-direction: column !important; }
+
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .msg-row { break-inside: avoid; page-break-inside: avoid; margin-bottom: 10px; }
+  .avatar { display: none !important; }
+  .bubble.user { background: #f0f4ff !important; border: 1px solid #bbb !important; color: #222 !important; max-width: 95% !important; }
+  .bubble.bot { background: #fff !important; border: 1px solid #ddd !important; color: #111 !important; max-width: 95% !important; }
+  .bubble.system-msg { background: #f8f8f8 !important; border: 1px solid #eee !important; color: #666 !important; }
+  .user-context-tag { background: #e8f0ff !important; color: #333 !important; border-color: #aaa !important; }
+}
 </style>
 </head>
 <body>
@@ -148,11 +198,18 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
     </div>
   </div>
   <div id="header-right">
+    <button class="hist-header-btn" onclick="openHistory()">📂 שיחות שמורות</button>
     <div class="status-pill"><div class="status-dot"></div><span id="status-text">מחובר לשרת</span></div>
   </div>
 </div>
 
-<div id="error-banner" id="err">⚠️ שגיאת חיבור — ודא שהשרת פועל: <code>node server.js</code></div>
+<div id="error-banner">⚠️ שגיאת חיבור — ודא שהשרת פועל: <code>node server.js</code></div>
+
+<!-- Print-only header -->
+<div id="print-header">
+  <div style="font-size:20px;font-weight:bold;color:#0d1f3c">🛡️ SafetyIL — שיחת בטיחות</div>
+  <div style="color:#666;font-size:13px;margin-top:4px">תפקיד: <span id="print-role">עובד</span> | תאריך: <span id="print-date"></span></div>
+</div>
 
 <div id="layout">
   <div id="sidebar">
@@ -216,6 +273,15 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
       <button class="quick-btn" onclick="askQ('מה הדרישות לעבודה עם חומרים מסוכנים בישראל?')">☣️ חומרים מסוכנים</button>
     </div>
 
+    <div id="action-bar">
+      <div id="action-bar-label">כלי עבודה</div>
+      <button class="action-btn" onclick="generateChecklist()">📋 רשימת תיוג</button>
+      <button class="action-btn" onclick="exportPDF()">📄 PDF</button>
+      <button class="action-btn" onclick="exportWord()">📝 Word</button>
+      <button class="action-btn" onclick="saveConversation()">💾 שמור שיחה</button>
+      <button class="action-btn" onclick="shareLink()">🔗 שתף קישור</button>
+    </div>
+
     <div id="input-bar">
       <textarea id="text-input" placeholder="שאל שאלת בטיחות..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
       <button id="send-btn" onclick="sendMessage()" disabled>
@@ -223,6 +289,36 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
       </button>
     </div>
     <div id="disclaimer">⚠️ הכלי מספק מידע כללי ואינו מהווה ייעוץ משפטי. במקרה ספק — פנה לממונה הבטיחות.</div>
+  </div>
+</div>
+
+<!-- CHECKLIST MODAL -->
+<div id="checklist-modal" class="modal-wrap">
+  <div class="modal-overlay" onclick="closeChecklistModal()"></div>
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title">📋 רשימת תיוג — <span id="checklist-role-label"></span></span>
+      <div class="modal-actions">
+        <button class="modal-btn" onclick="printChecklist()">📄 PDF</button>
+        <button class="modal-btn" onclick="wordChecklist()">📝 Word</button>
+        <button class="modal-close" onclick="closeChecklistModal()">✕</button>
+      </div>
+    </div>
+    <div class="modal-body" id="checklist-content"></div>
+  </div>
+</div>
+
+<!-- HISTORY MODAL -->
+<div id="history-modal" class="modal-wrap">
+  <div class="modal-overlay" onclick="closeHistory()"></div>
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title">📂 שיחות שמורות</span>
+      <div class="modal-actions">
+        <button class="modal-close" onclick="closeHistory()">✕</button>
+      </div>
+    </div>
+    <div class="modal-body" id="history-list"></div>
   </div>
 </div>
 
@@ -313,35 +409,30 @@ const SYSTEM_PROMPT = `אתה SafetyIL — עוזר בטיחות תעסוקתי�
 
 const ROLE_PROMPTS = {
   'עובד': `## הנחיות התאמה לתפקיד: עובד
-המשתמש הוא עובד בשטח. התאם את התשובה בהתאם:
-• שפה פשוטה וברורה — ללא מונחים משפטיים או טכניים. אם מוכרחים להשתמש במונח — הסבר אותו.
-• התמקד במה לעשות עכשיו בפועל: צעדים קונקרטיים, לא תיאוריה.
-• הבהר בבירור מה מותר ומה אסור לעשות.
-• ציין מתי חייבים לעצור את העבודה ולקרוא למנהל.
-• אל תציף במקורות חוקיים — ציין את העיקרי בלבד.`,
+• שפה פשוטה וברורה — ללא מונחים משפטיים.
+• התמקד במה לעשות עכשיו בפועל: צעדים קונקרטיים.
+• הבהר מה מותר ומה אסור לעשות.
+• ציין מתי חייבים לעצור ולקרוא למנהל.
+• ציין את המקור החוקי העיקרי בלבד.`,
 
   'מנהל עבודה': `## הנחיות התאמה לתפקיד: מנהל עבודה
-המשתמש הוא מנהל עבודה. התאם את התשובה בהתאם:
 • פרט את חובותיו החוקיות הספציפיות כמנהל עבודה.
 • הסבר מה עליו לוודא ולבדוק לפני תחילת כל עבודה.
-• הבהר את האחריות האישית שלו אם מתרחש אירוע — כולל אחריות פלילית ואזרחית.
+• הבהר את האחריות האישית שלו — כולל אחריות פלילית ואזרחית.
 • פרט נהלי תיעוד ודיווח: מה לתעד, מתי, ואיך.
 • כלול ציטוטים חוקיים רלוונטיים אך בצורה מובנת.`,
 
   'ממונה בטיחות': `## הנחיות התאמה לתפקיד: ממונה בטיחות
-המשתמש הוא ממונה בטיחות מוסמך. התאם את התשובה בהתאם:
 • ספק ציטוטים חוקיים מלאים ומדויקים: שם תקנה + מספר סעיף + תת-סעיף + שנה.
 • פרט את כל התקנות הרלוונטיות — גם אם חופפות.
 • כלול חובות פיקוח, ביקורת, ואכיפה של הממונה.
 • פרט דרישות הכשרה ותיעוד לכל צד.
-• ציין סנקציות וקנסות על אי-עמידה בדרישות.
-• רמת פירוט מרבית — זהו המשתמש המקצועי ביותר.`,
+• ציין סנקציות וקנסות על אי-עמידה בדרישות.`,
 
   'קבלן': `## הנחיות התאמה לתפקיד: קבלן
-המשתמש הוא קבלן. התאם את התשובה בהתאם:
 • פרט את חובות הקבלן הספציפיות לפי חוק הבטיחות בישראל.
 • הסבר את האחריות החוזית והחוקית מול מזמין העבודה.
-• ציין אילו ביטוחים נדרשים על-פי חוק (אחריות מקצועית, עבודות, צד ג').
+• ציין אילו ביטוחים נדרשים על-פי חוק.
 • פרט חובות הדרכת עובדים ותיעודן.
 • כלול דרישות רישוי ואישורים הנדרשים מהקבלן.`
 };
@@ -367,7 +458,6 @@ function askQ(q) {
   inp.value = q; autoResize(inp); sendMessage();
 }
 
-// File upload
 function handleDragOver(e) { e.preventDefault(); document.getElementById('upload-zone').classList.add('drag-over'); }
 function handleDragLeave() { document.getElementById('upload-zone').classList.remove('drag-over'); }
 function handleDrop(e) { e.preventDefault(); document.getElementById('upload-zone').classList.remove('drag-over'); uploadFiles(e.dataTransfer.files); }
@@ -401,7 +491,6 @@ function renderUploadedDocs() {
 
 function removeDoc(i) { uploadedDocs.splice(i, 1); renderUploadedDocs(); }
 
-// Messages
 function hideWelcome() { const w = document.getElementById('welcome'); if (w) w.remove(); }
 
 function addUserMsg(text) {
@@ -423,7 +512,7 @@ function addSystemMsg(text) {
   const msgs = document.getElementById('messages');
   const el = document.createElement('div');
   el.className = 'msg-row';
-  el.innerHTML = `<div class="avatar bot">🛡️</div><div class="bubble bot" style="font-size:13px;color:var(--text-muted)">${text}</div>`;
+  el.innerHTML = `<div class="avatar bot">🛡️</div><div class="bubble bot system-msg" style="font-size:13px;color:var(--text-muted)">${text}</div>`;
   msgs.appendChild(el); msgs.scrollTop = msgs.scrollHeight;
 }
 
@@ -469,6 +558,10 @@ function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
 }
 
+function showActionBar() {
+  document.getElementById('action-bar').style.display = 'flex';
+}
+
 async function sendMessage() {
   if (isLoading) return;
   const input = document.getElementById('text-input');
@@ -504,6 +597,8 @@ async function sendMessage() {
     conversation.push({ role: 'assistant', content: stripTags(html) });
     addBotMsg(html);
     document.getElementById('error-banner').style.display = 'none';
+    showActionBar();
+    autoSave();
   } catch(err) {
     removeTyping();
     document.getElementById('error-banner').style.display = 'block';
@@ -512,7 +607,248 @@ async function sendMessage() {
   isLoading = false;
 }
 
-// Check server on load
+// ── PDF EXPORT ──
+function exportPDF() {
+  if (!conversation.length) { showToast('אין שיחה לייצוא'); return; }
+  document.getElementById('print-role').textContent = currentRole;
+  document.getElementById('print-date').textContent = new Date().toLocaleDateString('he-IL', {year:'numeric',month:'long',day:'numeric'});
+  window.print();
+}
+
+// ── WORD EXPORT ──
+function exportWord() {
+  const rows = document.querySelectorAll('#messages .msg-row:not(#typing-row)');
+  if (!rows.length) { showToast('אין שיחה לייצוא'); return; }
+
+  let body = `<h1 style="color:#0d1f3c;border-bottom:2px solid #c9a84c;padding-bottom:8px;font-family:Arial">🛡️ SafetyIL — שיחת בטיחות</h1>
+<p style="color:#666;font-size:13px;font-family:Arial">תפקיד: ${currentRole} | תאריך: ${new Date().toLocaleDateString('he-IL')}</p>
+<hr style="border:1px solid #eee;margin:12px 0">`;
+
+  rows.forEach(row => {
+    const userBubble = row.querySelector('.bubble.user');
+    const botBubble = row.querySelector('.bubble.bot:not(.system-msg)');
+    if (userBubble) {
+      const textDiv = userBubble.querySelector('div:last-child');
+      const text = textDiv ? textDiv.innerHTML : '';
+      body += `<div style="background:#eef3ff;border-radius:8px;padding:10px 14px;margin:8px 0;border-right:3px solid #5b9bd5;font-family:Arial;font-size:13px">
+<strong style="font-size:12px;color:#5b9bd5;display:block;margin-bottom:4px">👤 ${currentRole}</strong>${text}</div>`;
+    } else if (botBubble) {
+      body += `<div style="background:#fff;border:1px solid #e0d8c4;border-radius:8px;padding:10px 14px;margin:8px 0;border-right:3px solid #c9a84c;font-family:Arial;font-size:13px">
+<strong style="font-size:12px;color:#c9a84c;display:block;margin-bottom:4px">🛡️ SafetyIL</strong>${botBubble.innerHTML}</div>`;
+    }
+  });
+
+  const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'>
+<head><meta charset='utf-8'><style>
+body{font-family:Arial,sans-serif;direction:rtl;font-size:13px;line-height:1.7;color:#222;max-width:800px;margin:0 auto;padding:20px}
+ul{padding-right:20px} h3,h4{font-family:Arial}
+</style></head><body>${body}</body></html>`;
+
+  const blob = new Blob(['﻿', html], { type: 'application/msword' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `SafetyIL_${currentRole}_${new Date().toLocaleDateString('he-IL').replace(/\//g,'-')}.doc`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('📝 קובץ Word הורד!');
+}
+
+// ── CHECKLIST GENERATOR ──
+async function generateChecklist() {
+  if (!conversation.length) { showToast('אנא שאל שאלה תחילה'); return; }
+  document.getElementById('checklist-role-label').textContent = currentRole;
+  document.getElementById('checklist-modal').style.display = 'flex';
+  document.getElementById('checklist-content').innerHTML = `<div style="display:flex;justify-content:center;padding:40px"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+
+  const prompts = {
+    'עובד': `בהתבסס על השיחה שלנו, צור רשימת תיוג מעשית לעובד בשטח. כלול: ציוד מגן אישי נדרש, בדיקות לפני תחילת עבודה, פעולות חובה בזמן העבודה, ומה לעשות במצב חירום. פורמט HTML: כותרות h3, רשימות ul עם li, הוסף ✅ לפני כל פריט.`,
+    'מנהל עבודה': `בהתבסס על השיחה שלנו, צור רשימת תיוג ניהולית. כלול: חובות המנהל לפי חוק, מסמכים לתיעוד, בדיקות לפני ובמהלך העבודה, נהלי דיווח. פורמט HTML: כותרות h3, רשימות ul עם li, הוסף ✅ לפני כל פריט.`,
+    'ממונה בטיחות': `בהתבסס על השיחה שלנו, צור דוח ציות חקיקתי. כלול: דרישות חוקיות עם סעיפים, נהלי ביקורת ופיקוח, תיעוד נדרש, סנקציות. פורמט HTML: כותרות h3, רשימות ul עם li, הוסף ✅ לפני כל פריט.`,
+    'קבלן': `בהתבסס על השיחה שלנו, צור רשימת תיוג לקבלן. כלול: ביטוחים נדרשים, רישיונות ואישורים, הדרכות עובדים, אחריות חוזית וחוקית. פורמט HTML: כותרות h3, רשימות ul עם li, הוסף ✅ לפני כל פריט.`
+  };
+
+  try {
+    const resp = await fetch(`${API_BASE}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system: SYSTEM_PROMPT,
+        messages: [...conversation.slice(-8), { role: 'user', content: prompts[currentRole] || prompts['עובד'] }],
+        max_tokens: 3000
+      })
+    });
+    const data = await resp.json();
+    document.getElementById('checklist-content').innerHTML = sanitizeHtml(data.text || '<p>לא ניתן ליצור רשימת תיוג.</p>');
+  } catch(e) {
+    document.getElementById('checklist-content').innerHTML = '<p style="color:#e67e22">שגיאת חיבור — נסה שוב.</p>';
+  }
+}
+
+function closeChecklistModal() {
+  document.getElementById('checklist-modal').style.display = 'none';
+}
+
+function printChecklist() {
+  const content = document.getElementById('checklist-content').innerHTML;
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html dir="rtl" lang="he"><head><meta charset="UTF-8"><title>רשימת תיוג — SafetyIL</title>
+<style>body{font-family:Arial,sans-serif;direction:rtl;padding:20px;color:#222;max-width:800px;margin:0 auto}
+h1{color:#0d1f3c;border-bottom:2px solid #c9a84c;padding-bottom:8px;font-size:18px}
+h3{color:#162e55;font-size:15px;margin-top:18px} ul{padding-right:20px;line-height:2} li{margin-bottom:4px}
+.meta{color:#666;font-size:12px;margin-bottom:16px}
+*{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+</style></head><body>
+<h1>🛡️ SafetyIL — רשימת תיוג</h1>
+<div class="meta">תפקיד: ${currentRole} | תאריך: ${new Date().toLocaleDateString('he-IL')}</div>
+${content}</body></html>`);
+  win.document.close();
+  setTimeout(() => { win.focus(); win.print(); }, 400);
+}
+
+function wordChecklist() {
+  const content = document.getElementById('checklist-content').innerHTML;
+  const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'>
+<head><meta charset='utf-8'><style>body{font-family:Arial,sans-serif;direction:rtl;font-size:13px;line-height:1.8;color:#222;padding:20px}
+h3{color:#162e55;margin-top:16px} ul{padding-right:20px;line-height:2}</style></head>
+<body><h1 style="color:#0d1f3c;border-bottom:2px solid #c9a84c;padding-bottom:8px">🛡️ SafetyIL — רשימת תיוג</h1>
+<p style="color:#666;font-size:12px">תפקיד: ${currentRole} | תאריך: ${new Date().toLocaleDateString('he-IL')}</p>
+${content}</body></html>`;
+  const blob = new Blob(['﻿', html], { type: 'application/msword' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `SafetyIL_רשימת_תיוג_${currentRole}_${new Date().toLocaleDateString('he-IL').replace(/\//g,'-')}.doc`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ── SAVE / HISTORY (localStorage) ──
+function autoSave() {
+  if (!conversation.length) return;
+  localStorage.setItem('safetyil_autosave', JSON.stringify({
+    date: new Date().toISOString(),
+    role: currentRole,
+    conversation,
+    messagesHtml: document.getElementById('messages').innerHTML
+  }));
+}
+
+function saveConversation() {
+  if (!conversation.length) { showToast('אין שיחה לשמירה'); return; }
+  const history = JSON.parse(localStorage.getItem('safetyil_history') || '[]');
+  const title = conversation.find(m => m.role === 'user')?.content?.substring(0, 60) || 'שיחה';
+  history.unshift({
+    id: Date.now().toString(),
+    date: new Date().toLocaleDateString('he-IL'),
+    role: currentRole,
+    title,
+    conversation,
+    messagesHtml: document.getElementById('messages').innerHTML
+  });
+  localStorage.setItem('safetyil_history', JSON.stringify(history.slice(0, 30)));
+  showToast('✅ שיחה נשמרה!');
+}
+
+function openHistory() {
+  const history = JSON.parse(localStorage.getItem('safetyil_history') || '[]');
+  const list = document.getElementById('history-list');
+  if (!history.length) {
+    list.innerHTML = '<div class="hist-empty">אין שיחות שמורות עדיין.<br><br>לאחר שיחה, לחץ <strong>💾 שמור שיחה</strong> כדי לשמור אותה כאן.</div>';
+  } else {
+    list.innerHTML = history.map((item, i) => `
+      <div class="hist-item" onclick="restoreConversation(${i})">
+        <div class="hist-info">
+          <div class="hist-title">${escHtml(item.title)}</div>
+          <div class="hist-meta">
+            <span>${item.date}</span><span>•</span>
+            <span>${item.role}</span><span>•</span>
+            <span>${item.conversation.length} הודעות</span>
+          </div>
+        </div>
+        <button class="hist-del" onclick="event.stopPropagation();deleteHistoryItem(${i})" title="מחק">✕</button>
+      </div>`).join('');
+  }
+  document.getElementById('history-modal').style.display = 'flex';
+}
+
+function closeHistory() {
+  document.getElementById('history-modal').style.display = 'none';
+}
+
+function restoreConversation(index) {
+  const history = JSON.parse(localStorage.getItem('safetyil_history') || '[]');
+  const item = history[index];
+  if (!item) return;
+  conversation = item.conversation;
+  currentRole = item.role;
+  document.querySelectorAll('.role-btn').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('onclick')?.includes(`'${currentRole}'`));
+  });
+  document.getElementById('messages').innerHTML = item.messagesHtml;
+  document.getElementById('messages').scrollTop = 999999;
+  closeHistory();
+  showActionBar();
+  addSystemMsg(`📂 שיחה שוחזרה (${item.date} — ${item.role})`);
+}
+
+function deleteHistoryItem(index) {
+  const history = JSON.parse(localStorage.getItem('safetyil_history') || '[]');
+  history.splice(index, 1);
+  localStorage.setItem('safetyil_history', JSON.stringify(history));
+  openHistory();
+}
+
+// ── SHARE LINK ──
+function shareLink() {
+  if (!conversation.length) { showToast('אין שיחה לשיתוף'); return; }
+  try {
+    const data = { role: currentRole, conversation, messagesHtml: document.getElementById('messages').innerHTML };
+    const compressed = LZString.compressToEncodedURIComponent(JSON.stringify(data));
+    const url = `${window.location.origin}${window.location.pathname}?s=${compressed}`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(() => showToast('🔗 קישור הועתק!'));
+    } else {
+      prompt('העתיקי את הקישור:', url);
+    }
+  } catch(e) { showToast('שגיאה ביצירת הקישור'); }
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  document.querySelector('.toast-notification')?.remove();
+  const t = document.createElement('div');
+  t.className = 'toast-notification';
+  t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--navy);padding:8px 20px;border-radius:20px;font-size:13px;font-weight:600;z-index:9999;pointer-events:none;animation:toast-in 0.2s ease,toast-out 0.3s ease 2s forwards';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2400);
+}
+
+// ── RESTORE FROM SHARE URL ──
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const shared = params.get('s');
+  if (shared && typeof LZString !== 'undefined') {
+    try {
+      const data = JSON.parse(LZString.decompressFromEncodedURIComponent(shared));
+      if (data.conversation?.length) {
+        conversation = data.conversation;
+        currentRole = data.role || 'עובד';
+        document.querySelectorAll('.role-btn').forEach(b => {
+          b.classList.toggle('active', b.getAttribute('onclick')?.includes(`'${currentRole}'`));
+        });
+        document.getElementById('messages').innerHTML = data.messagesHtml || '';
+        document.getElementById('messages').scrollTop = 999999;
+        window.history.replaceState({}, '', window.location.pathname);
+        showActionBar();
+        setTimeout(() => addSystemMsg('🔗 שיחה שוחזרה מקישור משותף'), 100);
+      }
+    } catch(e) { /* silent fail */ }
+  }
+});
+
+// ── SERVER CHECK ──
 fetch(`${API_BASE}/`)
   .then(r => {
     if (r.ok) document.getElementById('status-text').textContent = 'מחובר לשרת';
