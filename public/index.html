@@ -9,23 +9,38 @@
 <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
 <style>
 :root {
-  --navy: #0d1f3c;
-  --navy-mid: #162e55;
-  --navy-light: #1e3f72;
-  --gold: #c9a84c;
-  --gold-light: #e2c47a;
-  --gold-dim: #7a6030;
-  --white: #f5f2eb;
-  --white-dim: #d8d2c4;
+  /* Brand: HB Consulting */
+  --brand-green: #93c93e;
+  --brand-blue: #2e81c5;
+  --brand-purple: #78318e;
+  --brand-dark: #333333;
+
+  /* Backgrounds */
+  --navy: #141a14;
+  --navy-mid: #1e281e;
+  --navy-light: #263826;
+  --surface: #192019;
+  --surface-2: #0f140f;
+
+  /* Accent (brand green replaces gold) */
+  --gold: #93c93e;
+  --gold-light: #b0d85a;
+  --gold-dim: #5a7c1e;
+
+  /* Text */
+  --white: #f2f5ee;
+  --white-dim: #c5d0be;
+  --text-muted: #7a9070;
+
+  /* Status */
   --red: #c0392b;
   --red-light: #e74c3c;
   --green: #1a7a4a;
   --green-light: #27ae60;
-  --surface: #112240;
-  --surface-2: #0a1628;
-  --border: rgba(201,168,76,0.2);
-  --border-strong: rgba(201,168,76,0.5);
-  --text-muted: #8899b4;
+
+  /* Borders */
+  --border: rgba(147,201,62,0.2);
+  --border-strong: rgba(147,201,62,0.5);
   --radius: 10px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -163,9 +178,74 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
 .hist-del:hover { color: var(--red-light); }
 .hist-empty { text-align: center; color: var(--text-muted); padding: 40px 20px; font-size: 13px; line-height: 1.8; }
 
+/* Sidebar mobile toggle */
+#sidebar-toggle { display: none; width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); cursor: pointer; font-size: 18px; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
+#sidebar-toggle:hover { background: rgba(147,201,62,0.1); color: var(--gold-light); border-color: var(--border-strong); }
+#sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 49; }
+
 /* Toast */
 @keyframes toast-in { from{opacity:0;transform:translateX(-50%) translateY(8px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
 @keyframes toast-out { from{opacity:1} to{opacity:0} }
+
+/* ── MOBILE RESPONSIVE ── */
+@media (max-width: 768px) {
+  /* Show sidebar toggle */
+  #sidebar-toggle { display: flex; }
+
+  /* Sidebar slides in from right as overlay */
+  #sidebar {
+    position: fixed;
+    top: 0; right: -290px;
+    height: 100vh;
+    z-index: 50;
+    width: 280px;
+    transition: right 0.25s ease;
+    box-shadow: -6px 0 24px rgba(0,0,0,0.5);
+  }
+  #sidebar.open { right: 0; }
+  #sidebar-overlay.open { display: block; }
+
+  /* Header compact */
+  #logo-sub { display: none; }
+  #header { padding: 0 12px; gap: 10px; }
+
+  /* Toolbar: horizontal scroll */
+  #toolbar { flex-wrap: nowrap; overflow-x: auto; padding: 5px 12px; scrollbar-width: none; gap: 6px; }
+  #toolbar::-webkit-scrollbar { display: none; }
+  #toolbar-label { display: none; }
+  .tool-btn-sep { display: none; }
+  .tool-btn { font-size: 12px; padding: 5px 11px; }
+
+  /* Role bar: horizontal scroll */
+  #role-bar { flex-wrap: nowrap; overflow-x: auto; padding: 8px 12px; scrollbar-width: none; }
+  #role-bar::-webkit-scrollbar { display: none; }
+  #role-label { display: none; }
+  .role-btn { font-size: 11px; padding: 4px 10px; flex-shrink: 0; }
+
+  /* Quick row: horizontal scroll */
+  #quick-row { flex-wrap: nowrap; overflow-x: auto; padding: 5px 12px 8px; scrollbar-width: none; }
+  #quick-row::-webkit-scrollbar { display: none; }
+  #quick-title { display: none; }
+  .quick-btn { flex-shrink: 0; font-size: 11.5px; }
+
+  /* Messages */
+  #messages { padding: 12px; gap: 12px; }
+  .bubble.user { max-width: 92%; }
+  .bubble.bot { max-width: 98%; }
+  .bubble { padding: 11px 14px; font-size: 13.5px; }
+
+  /* Input bar */
+  #input-bar { padding: 8px 12px; }
+  #text-input { font-size: 16px; } /* prevent zoom on iOS */
+
+  /* Modals: bottom sheet */
+  .modal-wrap { align-items: flex-end; padding: 0; }
+  .modal-box { border-radius: 16px 16px 0 0; max-height: 92vh; min-height: 320px; }
+
+  /* Error banner */
+  #error-banner { font-size: 11px; padding: 6px 12px; }
+  #disclaimer { font-size: 10px; padding: 4px 12px 5px; }
+}
 
 /* Print header (hidden normally) */
 #print-header { display: none; }
@@ -194,6 +274,7 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
 <body>
 
 <div id="header">
+  <button id="sidebar-toggle" onclick="toggleSidebar()" title="בסיס הידע">☰</button>
   <div id="logo">
     <div id="logo-icon">🛡️</div>
     <div>
@@ -226,6 +307,7 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
   <div style="color:#666;font-size:13px;margin-top:4px">תפקיד: <span id="print-role">עובד</span> | תאריך: <span id="print-date"></span></div>
 </div>
 
+<div id="sidebar-overlay" onclick="closeSidebar()"></div>
 <div id="layout">
   <div id="sidebar">
     <div id="sidebar-title">📚 בסיס ידע</div>
@@ -370,7 +452,7 @@ const SYSTEM_PROMPT = `אתה SafetyIL — עוזר בטיחות תעסוקתי�
 השתמש אך ורק בתגיות הבאות:
 
 כותרת ראשית:
-<h3 style="color:#e2c47a;margin:16px 0 8px;font-size:15px;border-bottom:1px solid rgba(201,168,76,0.3);padding-bottom:4px">כותרת</h3>
+<h3 style="color:#b0d85a;margin:16px 0 8px;font-size:15px;border-bottom:1px solid rgba(147,201,62,0.3);padding-bottom:4px">כותרת</h3>
 
 כותרת משנה:
 <h4 style="color:#d8d2c4;margin:10px 0 5px;font-size:13.5px">כותרת</h4>
@@ -390,17 +472,17 @@ const SYSTEM_PROMPT = `אתה SafetyIL — עוזר בטיחות תעסוקתי�
 <span style="background:#c0392b;color:white;padding:2px 8px;border-radius:4px;font-size:12px;margin-left:6px;white-space:nowrap">אסור לפי חוק</span>
 
 תג המלצה מקצועית:
-<span style="background:#185FA5;color:white;padding:2px 8px;border-radius:4px;font-size:12px;margin-left:6px;white-space:nowrap">המלצה</span>
+<span style="background:#2e81c5;color:white;padding:2px 8px;border-radius:4px;font-size:12px;margin-left:6px;white-space:nowrap">המלצה</span>
 
 מקור חוקי (לכל ציטוט נפרד):
-<div style="background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.4);border-radius:6px;padding:8px 12px;margin:6px 0;font-size:13px;color:#e2c47a">📋 מקור: שם תקנה + סעיף + שנה</div>
+<div style="background:rgba(147,201,62,0.08);border:1px solid rgba(147,201,62,0.4);border-radius:6px;padding:8px 12px;margin:6px 0;font-size:13px;color:#b0d85a">📋 מקור: שם תקנה + סעיף + שנה</div>
 
 אזהרה:
 <div style="background:rgba(192,57,43,0.15);border-right:3px solid #e74c3c;border-radius:6px;padding:8px 12px;margin:8px 0;color:#f39c8a">⛔ טקסט אזהרה</div>
 
 פעולה נדרשת — בסוף כל תשובה חובה:
-<div style="background:rgba(91,155,213,0.08);border:1px solid rgba(91,155,213,0.3);border-radius:6px;padding:10px 14px;margin:14px 0 4px">
-<div style="color:#74b9ff;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">▶ פעולה נדרשת</div>
+<div style="background:rgba(46,129,197,0.08);border:1px solid rgba(46,129,197,0.3);border-radius:6px;padding:10px 14px;margin:14px 0 4px">
+<div style="color:#5da8e8;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">▶ פעולה נדרשת</div>
 <ul style="margin:0;padding-right:18px;line-height:2">
 <li>צעד ראשון</li>
 <li>צעד שני</li>
@@ -943,6 +1025,18 @@ window.addEventListener('DOMContentLoaded', () => {
     } catch(e) { /* silent fail */ }
   }
 });
+
+// ── MOBILE SIDEBAR ──
+function toggleSidebar() {
+  const s = document.getElementById('sidebar');
+  const o = document.getElementById('sidebar-overlay');
+  const open = s.classList.toggle('open');
+  o.classList.toggle('open', open);
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+}
 
 // ── SERVER CHECK ──
 fetch(`${API_BASE}/`)
