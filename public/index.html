@@ -1024,21 +1024,45 @@ function deleteHistoryItem(index) {
 function whatsappChecklist() {
   const content = document.getElementById('checklist-content');
   if (!content || !content.innerHTML.trim()) { showToast('אין רשימה לשליחה'); return; }
+
+  // strip emoji and extra whitespace from extracted text
+  function cleanText(el) {
+    return (el.innerText || '')
+      .replace(/[\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}]|[\u{FE00}-\u{FEFF}]|[\u{1F300}-\u{1FAFF}]/gu, '')
+      .replace(/\s+/g, ' ').trim();
+  }
+
   const lines = [];
-  lines.push(`✅ רשימת תיוג בטיחות — ${currentRole}`);
+  lines.push(`*רשימת תיוג בטיחות - ${currentRole}*`);
   lines.push('');
-  content.querySelectorAll('h3,h4,li,p').forEach(el => {
-    const text = el.innerText?.trim();
+
+  let section = '';
+  let subSection = '';
+
+  content.querySelectorAll('h3, h4, li').forEach(el => {
+    const text = cleanText(el);
     if (!text) return;
-    if (el.tagName === 'H3') lines.push(`*${text}*`);
-    else if (el.tagName === 'H4') lines.push(`_${text}_`);
-    else if (el.tagName === 'LI') lines.push(`• ${text}`);
-    else lines.push(text);
+
+    if (el.tagName === 'H3') {
+      if (lines.length > 2) lines.push('');
+      section = text;
+      subSection = '';
+      lines.push(`*${text}*`);
+    } else if (el.tagName === 'H4') {
+      subSection = text;
+      lines.push(`  _${text}_`);
+    } else if (el.tagName === 'LI') {
+      const ctx = subSection || section;
+      const prefix = ctx ? `[${ctx}] ` : '';
+      lines.push(`- ${prefix}${text}`);
+    }
   });
+
   lines.push('');
-  lines.push('_נוצר ע"י SafetyIL — עוזר בטיחות תעסוקתית_');
-  const msg = encodeURIComponent(lines.join('\n'));
-  window.open(`https://wa.me/?text=${msg}`, '_blank');
+  lines.push('_SafetyIL - עוזר בטיחות תעסוקתית_');
+
+  const msg = lines.join('\n').replace(/—/g, '-');
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
 // ── SHARE LINK ──
