@@ -713,9 +713,12 @@ async function sendMessage() {
     });
 
     const data = await resp.json();
-    const html = data.text || '<div style="color:#e67e22">⚠️ לא התקבלה תשובה מהשרת.</div>';
     removeTyping();
-
+    if (data.error) {
+      addBotMsg(`<div style="background:rgba(192,57,43,0.12);border:1px solid rgba(192,57,43,0.35);border-radius:8px;padding:10px 14px;color:#f39c8a">⚠️ שגיאת API: ${escHtml(data.error)}</div>`);
+      isLoading = false; return;
+    }
+    const html = data.text || '<div style="color:#e67e22">⚠️ לא התקבלה תשובה מהשרת.</div>';
     conversation.push({ role: 'assistant', content: stripTags(html) });
     addBotMsg(html);
     document.getElementById('error-banner').style.display = 'none';
@@ -723,7 +726,7 @@ async function sendMessage() {
   } catch(err) {
     removeTyping();
     document.getElementById('error-banner').style.display = 'block';
-    addBotMsg('<div style="color:#e67e22">⚠️ שגיאת חיבור לשרת. ודא שהשרת פועל.</div>');
+    addBotMsg(`<div style="color:#e67e22">⚠️ שגיאת חיבור: ${escHtml(err.message)}</div>`);
   }
   isLoading = false;
 }
