@@ -56,6 +56,12 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
 .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green-light); animation: blink 2s ease-in-out infinite; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
 #status-text { font-size: 11px; color: var(--text-muted); }
+/* ROLE BAR — now at top, above toolbar */
+#role-bar { display: flex; gap: 6px; padding: 8px 20px; border-bottom: 1px solid var(--border); background: var(--surface-2); flex-shrink: 0; align-items: center; }
+#role-label { font-size: 11px; color: var(--text-muted); margin-left: 4px; }
+.role-btn { padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); font-size: 11.5px; font-family: 'Heebo', sans-serif; cursor: pointer; transition: all 0.15s; }
+.role-btn.active, .role-btn:hover { background: rgba(201,168,76,0.12); border-color: var(--border-strong); color: var(--gold-light); }
+
 /* TOOLBAR */
 #toolbar { background: var(--surface-2); border-bottom: 1px solid var(--border); padding: 7px 20px; display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
 #toolbar-label { font-size: 10px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 0.08em; margin-left: 6px; }
@@ -67,7 +73,12 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
 
 /* SIDEBAR */
 #sidebar { width: 260px; background: var(--surface-2); border-left: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
-#sidebar-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold-dim); padding: 14px 16px 10px; border-bottom: 1px solid var(--border); }
+#sidebar-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.stab { flex: 1; padding: 9px 4px; background: transparent; border: none; border-bottom: 2px solid transparent; color: var(--text-muted); font-size: 11px; font-family: 'Heebo', sans-serif; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+.stab:hover { color: var(--white-dim); background: rgba(147,201,62,0.05); }
+.stab.active { color: var(--gold-light); border-bottom-color: var(--gold); background: rgba(147,201,62,0.07); }
+.stab-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.stab-panel[hidden] { display: none; }
 #docs-list { flex: 1; overflow-y: auto; padding: 8px; }
 .doc-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 7px; font-size: 12.5px; color: var(--white-dim); cursor: pointer; transition: background 0.15s; border: 1px solid transparent; margin-bottom: 2px; }
 .doc-item:hover { background: rgba(201,168,76,0.07); }
@@ -102,11 +113,6 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
 .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
 @keyframes bounce { 0%,80%,100%{transform:scale(0.7);opacity:0.4} 40%{transform:scale(1);opacity:1} }
 .user-context-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 3px 8px; background: rgba(91,155,213,0.15); border: 1px solid rgba(91,155,213,0.3); border-radius: 12px; color: #5b9bd5; margin-bottom: 8px; }
-
-#role-bar { display: flex; gap: 6px; padding: 10px 20px; border-top: 1px solid var(--border); background: var(--surface-2); flex-shrink: 0; align-items: center; }
-#role-label { font-size: 11px; color: var(--text-muted); margin-left: 4px; }
-.role-btn { padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); font-size: 11.5px; font-family: 'Heebo', sans-serif; cursor: pointer; transition: all 0.15s; }
-.role-btn.active, .role-btn:hover { background: rgba(201,168,76,0.12); border-color: var(--border-strong); color: var(--gold-light); }
 
 #quick-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 20px 10px; background: var(--surface-2); border-top: 1px solid var(--border); flex-shrink: 0; }
 #quick-title { width: 100%; font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; }
@@ -217,10 +223,12 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
   .tool-btn { font-size: 12px; padding: 5px 11px; }
 
   /* Role bar: horizontal scroll */
-  #role-bar { flex-wrap: nowrap; overflow-x: auto; padding: 8px 12px; scrollbar-width: none; }
+  #role-bar { flex-wrap: nowrap; overflow-x: auto; padding: 7px 12px; scrollbar-width: none; }
   #role-bar::-webkit-scrollbar { display: none; }
   #role-label { display: none; }
   .role-btn { font-size: 11px; padding: 4px 10px; flex-shrink: 0; }
+  /* Sidebar tabs compact */
+  .stab { font-size: 10px; padding: 8px 2px; }
 
   /* Quick row: horizontal scroll */
   #quick-row { flex-wrap: nowrap; overflow-x: auto; padding: 5px 12px 8px; scrollbar-width: none; }
@@ -253,7 +261,7 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
 /* PRINT */
 @media print {
   #print-header { display: block !important; padding-bottom: 12px; margin-bottom: 20px; border-bottom: 2px solid #c9a84c; font-family: Arial, sans-serif; }
-  #header, #toolbar, #sidebar, #role-bar, #quick-row, #action-bar, #input-bar,
+  #header, #role-bar, #toolbar, #sidebar, #quick-row, #action-bar, #input-bar,
   #disclaimer, #error-banner, #header-right, #checklist-modal, #history-modal { display: none !important; }
 
   body { background: white !important; color: #111 !important; height: auto !important; overflow: visible !important; }
@@ -287,6 +295,14 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
   </div>
 </div>
 
+<div id="role-bar">
+  <span id="role-label">אני:</span>
+  <button class="role-btn active" onclick="setRole(this,'עובד')">👷 עובד</button>
+  <button class="role-btn" onclick="setRole(this,'מנהל עבודה')">👔 מנהל</button>
+  <button class="role-btn" onclick="setRole(this,'ממונה בטיחות')">🛡️ ממונה בטיחות</button>
+  <button class="role-btn" onclick="setRole(this,'קבלן')">🔨 קבלן</button>
+</div>
+
 <div id="toolbar">
   <span id="toolbar-label">כלי עבודה:</span>
   <button class="tool-btn" onclick="generateChecklist()" title="יצירת רשימת תיוג מהשיחה לפי תפקידך">📋 רשימת תיוג</button>
@@ -295,7 +311,6 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
   <button class="tool-btn" onclick="exportWord()">📝 Word</button>
   <div class="tool-btn-sep"></div>
   <button class="tool-btn" onclick="saveConversation()">💾 שמור שיחה</button>
-  <button class="tool-btn" onclick="openHistory()">📂 היסטוריה</button>
   <button class="tool-btn" onclick="shareLink()">🔗 שתף</button>
 </div>
 
@@ -310,30 +325,47 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
 <div id="sidebar-overlay" onclick="closeSidebar()"></div>
 <div id="layout">
   <div id="sidebar">
-    <div id="sidebar-title">📚 בסיס ידע</div>
-    <div id="docs-list">
-      <div class="sidebar-section">חקיקה ורגולציה</div>
-      <div class="doc-item active"><span class="doc-icon">📜</span> פקודת הבטיחות בעבודה <span class="doc-badge">תש"ל-1970</span></div>
-      <div class="doc-item active"><span class="doc-icon">🔧</span> עבודה בגובה<span class="doc-badge">תשס"ז-2007</span></div>
-      <div class="doc-item active"><span class="doc-icon">🏗️</span> עבודות בנייה<span class="doc-badge">תשמ"ח-1988</span></div>
-      <div class="doc-item active"><span class="doc-icon">⚗️</span> חומרים מסוכנים<span class="doc-badge">תשמ"ד-1984</span></div>
-      <div class="doc-item active"><span class="doc-icon">⚡</span> חשמל — תקנות הבטיחות<span class="doc-badge">תוקף</span></div>
-      <div class="doc-item active"><span class="doc-icon">🦺</span> ציוד מגן אישי<span class="doc-badge">תוקף</span></div>
-      <div class="doc-item active"><span class="doc-icon">🛡️</span> ממונה על הבטיחות<span class="doc-badge">תשמ"ו-1986</span></div>
-      <div class="doc-item active"><span class="doc-icon">🚧</span> מכונות הרמה / עגורנים<span class="doc-badge">תשנ"ג-1993</span></div>
-      <div class="doc-item active"><span class="doc-icon">🧯</span> כיבוי אש<span class="doc-badge">תוקף</span></div>
-      <div class="doc-item active"><span class="doc-icon">🔬</span> ניטור סביבתי<span class="doc-badge">תש"ן-1990</span></div>
-      <div id="uploaded-docs-section" style="display:none">
-        <div class="sidebar-section">📁 מסמכי חברה</div>
-        <div id="uploaded-docs-list"></div>
+    <div id="sidebar-tabs">
+      <button class="stab active" onclick="switchSidebarTab('law',this)">📜 חקיקה</button>
+      <button class="stab" onclick="switchSidebarTab('company',this)">📁 נהלים</button>
+      <button class="stab" onclick="switchSidebarTab('history',this)">📂 שיחות</button>
+    </div>
+
+    <!-- TAB: חקיקה -->
+    <div id="stab-law" class="stab-panel">
+      <div id="docs-list">
+        <div class="sidebar-section">חקיקה ורגולציה</div>
+        <div class="doc-item active"><span class="doc-icon">📜</span> פקודת הבטיחות בעבודה <span class="doc-badge">תש"ל-1970</span></div>
+        <div class="doc-item active"><span class="doc-icon">🔧</span> עבודה בגובה<span class="doc-badge">תשס"ז-2007</span></div>
+        <div class="doc-item active"><span class="doc-icon">🏗️</span> עבודות בנייה<span class="doc-badge">תשמ"ח-1988</span></div>
+        <div class="doc-item active"><span class="doc-icon">⚗️</span> חומרים מסוכנים<span class="doc-badge">תשמ"ד-1984</span></div>
+        <div class="doc-item active"><span class="doc-icon">⚡</span> חשמל — תקנות הבטיחות<span class="doc-badge">תוקף</span></div>
+        <div class="doc-item active"><span class="doc-icon">🦺</span> ציוד מגן אישי<span class="doc-badge">תוקף</span></div>
+        <div class="doc-item active"><span class="doc-icon">🛡️</span> ממונה על הבטיחות<span class="doc-badge">תשמ"ו-1986</span></div>
+        <div class="doc-item active"><span class="doc-icon">🚧</span> מכונות הרמה / עגורנים<span class="doc-badge">תשנ"ג-1993</span></div>
+        <div class="doc-item active"><span class="doc-icon">🧯</span> כיבוי אש<span class="doc-badge">תוקף</span></div>
+        <div class="doc-item active"><span class="doc-icon">🔬</span> ניטור סביבתי<span class="doc-badge">תש"ן-1990</span></div>
       </div>
     </div>
-    <div id="upload-zone" onclick="document.getElementById('file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
-      <span class="up-icon">⬆️</span>
-      <strong style="font-size:12.5px;color:var(--white-dim)">העלה נהלי חברה</strong>
-      <div style="margin-top:4px;font-size:11px">PDF · Word · TXT</div>
+
+    <!-- TAB: נהלי חברה -->
+    <div id="stab-company" class="stab-panel" hidden>
+      <div id="uploaded-docs-list" style="flex:1;overflow-y:auto;padding:8px;"></div>
+      <div id="company-empty" style="flex:1;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;color:var(--text-muted);font-size:12.5px;line-height:1.7">
+        העלי נהלי חברה<br>כדי לקבל תשובות המותאמות<br>לנהלים הפנימיים שלך
+      </div>
+      <div id="upload-zone" onclick="document.getElementById('file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+        <span class="up-icon">⬆️</span>
+        <strong style="font-size:12.5px;color:var(--white-dim)">העלה נהלי חברה</strong>
+        <div style="margin-top:4px;font-size:11px">PDF · Word · TXT</div>
+      </div>
+      <input type="file" id="file-input" accept=".pdf,.doc,.docx,.txt" multiple onchange="handleFileInput(this.files)">
     </div>
-    <input type="file" id="file-input" accept=".pdf,.doc,.docx,.txt" multiple onchange="handleFileInput(this.files)">
+
+    <!-- TAB: שיחות שמורות -->
+    <div id="stab-history" class="stab-panel" hidden>
+      <div id="sidebar-history-list" style="flex:1;overflow-y:auto;padding:8px;"></div>
+    </div>
   </div>
 
   <div id="main">
@@ -350,14 +382,6 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
           <span class="welcome-tag">עבודות בנייה</span>
         </div>
       </div>
-    </div>
-
-    <div id="role-bar">
-      <span id="role-label">אני:</span>
-      <button class="role-btn active" onclick="setRole(this,'עובד')">👷 עובד</button>
-      <button class="role-btn" onclick="setRole(this,'מנהל עבודה')">👔 מנהל</button>
-      <button class="role-btn" onclick="setRole(this,'ממונה בטיחות')">🛡️ ממונה בטיחות</button>
-      <button class="role-btn" onclick="setRole(this,'קבלן')">🔨 קבלן</button>
     </div>
 
     <div id="quick-row">
@@ -389,6 +413,7 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
       <div class="modal-actions">
         <button class="modal-btn" onclick="printChecklist()">📄 PDF</button>
         <button class="modal-btn" onclick="wordChecklist()">📝 Word</button>
+        <button class="modal-btn" onclick="whatsappChecklist()" style="background:rgba(37,211,102,0.12);border-color:rgba(37,211,102,0.5);color:#25d366">💬 WhatsApp</button>
         <button class="modal-close" onclick="closeChecklistModal()">✕</button>
       </div>
     </div>
@@ -604,9 +629,9 @@ async function uploadFiles(files) {
 }
 
 function renderUploadedDocs() {
-  const sec = document.getElementById('uploaded-docs-section');
   const list = document.getElementById('uploaded-docs-list');
-  sec.style.display = uploadedDocs.length ? 'block' : 'none';
+  const empty = document.getElementById('company-empty');
+  if (empty) empty.style.display = uploadedDocs.length ? 'none' : 'flex';
   list.innerHTML = uploadedDocs.map((d, i) => `
     <div class="doc-item" style="background:rgba(26,122,74,0.1);border-color:rgba(39,174,96,0.2)">
       <span class="doc-icon">📄</span>
@@ -933,11 +958,21 @@ function saveConversation() {
   showToast('✅ שיחה נשמרה!');
 }
 
-function openHistory() {
+function switchSidebarTab(tab, btn) {
+  ['law','company','history'].forEach(t => {
+    document.getElementById('stab-' + t).hidden = (t !== tab);
+  });
+  document.querySelectorAll('.stab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  else document.querySelector(`.stab[onclick*="'${tab}'"]`)?.classList.add('active');
+  if (tab === 'history') renderSidebarHistory();
+}
+
+function renderSidebarHistory() {
   const history = JSON.parse(localStorage.getItem('safetyil_history') || '[]');
-  const list = document.getElementById('history-list');
+  const list = document.getElementById('sidebar-history-list');
   if (!history.length) {
-    list.innerHTML = '<div class="hist-empty">אין שיחות שמורות עדיין.<br><br>לאחר שיחה, לחץ <strong>💾 שמור שיחה</strong> כדי לשמור אותה כאן.</div>';
+    list.innerHTML = '<div class="hist-empty">אין שיחות שמורות עדיין.<br><br>לאחר שיחה לחצי <strong>💾 שמור שיחה</strong>.</div>';
   } else {
     list.innerHTML = history.map((item, i) => `
       <div class="hist-item" onclick="restoreConversation(${i})">
@@ -952,7 +987,11 @@ function openHistory() {
         <button class="hist-del" onclick="event.stopPropagation();deleteHistoryItem(${i})" title="מחק">✕</button>
       </div>`).join('');
   }
-  document.getElementById('history-modal').style.display = 'flex';
+}
+
+function openHistory() {
+  switchSidebarTab('history', null);
+  if (window.innerWidth <= 768) toggleSidebar();
 }
 
 function closeHistory() {
@@ -970,7 +1009,7 @@ function restoreConversation(index) {
   });
   document.getElementById('messages').innerHTML = item.messagesHtml;
   document.getElementById('messages').scrollTop = 999999;
-  closeHistory();
+  if (window.innerWidth <= 768) closeSidebar();
   addSystemMsg(`📂 שיחה שוחזרה (${item.date} — ${item.role})`);
 }
 
@@ -978,7 +1017,28 @@ function deleteHistoryItem(index) {
   const history = JSON.parse(localStorage.getItem('safetyil_history') || '[]');
   history.splice(index, 1);
   localStorage.setItem('safetyil_history', JSON.stringify(history));
-  openHistory();
+  renderSidebarHistory();
+}
+
+// ── WHATSAPP CHECKLIST ──
+function whatsappChecklist() {
+  const content = document.getElementById('checklist-content');
+  if (!content || !content.innerHTML.trim()) { showToast('אין רשימה לשליחה'); return; }
+  const lines = [];
+  lines.push(`✅ רשימת תיוג בטיחות — ${currentRole}`);
+  lines.push('');
+  content.querySelectorAll('h3,h4,li,p').forEach(el => {
+    const text = el.innerText?.trim();
+    if (!text) return;
+    if (el.tagName === 'H3') lines.push(`*${text}*`);
+    else if (el.tagName === 'H4') lines.push(`_${text}_`);
+    else if (el.tagName === 'LI') lines.push(`• ${text}`);
+    else lines.push(text);
+  });
+  lines.push('');
+  lines.push('_נוצר ע"י SafetyIL — עוזר בטיחות תעסוקתית_');
+  const msg = encodeURIComponent(lines.join('\n'));
+  window.open(`https://wa.me/?text=${msg}`, '_blank');
 }
 
 // ── SHARE LINK ──
