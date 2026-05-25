@@ -305,6 +305,8 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
 
 <div id="toolbar">
   <span id="toolbar-label">כלי עבודה:</span>
+  <button class="tool-btn" onclick="newConversation()" style="border-color:rgba(120,49,142,0.5);color:#c084db;background:rgba(120,49,142,0.08)" title="פתח שיחה חדשה">✏️ שיחה חדשה</button>
+  <div class="tool-btn-sep"></div>
   <button class="tool-btn" onclick="generateChecklist()" title="יצירת רשימת תיוג מהשיחה לפי תפקידך">📋 רשימת תיוג</button>
   <div class="tool-btn-sep"></div>
   <button class="tool-btn" onclick="exportPDF()">📄 PDF</button>
@@ -644,6 +646,28 @@ function removeDoc(i) { uploadedDocs.splice(i, 1); renderUploadedDocs(); }
 
 function hideWelcome() { const w = document.getElementById('welcome'); if (w) w.remove(); }
 
+function newConversation() {
+  if (conversation.length && !confirm('לפתוח שיחה חדשה? השיחה הנוכחית תימחק (שמרי אותה קודם אם צריך).')) return;
+  conversation = [];
+  uploadedDocs = [];
+  document.getElementById('messages').innerHTML = `
+    <div id="welcome">
+      <div id="welcome-icon">🛡️</div>
+      <h2>עוזר בטיחות תעסוקתית</h2>
+      <p>שאל כל שאלת בטיחות — תקבל תשובה מבוססת חקיקה ישראלית, עם הפניה לסעיף ותקנה מדויקת.</p>
+      <div class="welcome-tags">
+        <span class="welcome-tag">פקודת הבטיחות בעבודה</span>
+        <span class="welcome-tag">עבודה בגובה</span>
+        <span class="welcome-tag">חומרים מסוכנים</span>
+        <span class="welcome-tag">ציוד מגן אישי</span>
+        <span class="welcome-tag">עבודות בנייה</span>
+      </div>
+    </div>`;
+  document.getElementById('text-input').value = '';
+  document.getElementById('send-btn').disabled = true;
+  renderUploadedDocs();
+}
+
 function addUserMsg(text) {
   hideWelcome();
   const msgs = document.getElementById('messages');
@@ -807,19 +831,23 @@ ul{padding-right:20px} h3,h4{font-family:Arial}
 const CHECKLIST_SYSTEM = `אתה SafetyIL — עוזר בטיחות תעסוקתית ישראלי.
 תפקידך כרגע: לייצר רשימת תיוג מעשית על בסיס השיחה שהתקיימה.
 
-## כללי פורמט — HTML בלבד:
+## חוקי ברזל:
+- השורה הראשונה בתגובה חייבת להיות כותרת ספציפית לנושא השיחה:
+  <h2 style="color:#b0d85a;font-size:16px;margin:0 0 14px;padding-bottom:8px;border-bottom:2px solid rgba(147,201,62,0.4)">רשימת תיוג ל[תאר כאן את הפעולה הספציפית מהשיחה, למשל: עבודה עם כלי ריתוך בחלל מוקף]</h2>
+  הכותרת חייבת להיות קונקרטית ומותאמת לשיחה — לא "רשימת תיוג בטיחות" גנרית!
+- כל פריט מתחיל ב-✅
+- כל קטגוריה פותחת בכותרת h3
+- אחרי כל קטגוריה — תיבת מקור חוקי קצרה
+- אסור markdown, backticks, JSON — HTML בלבד
+- לפחות 4 קטגוריות, לפחות 4 פריטים בכל קטגוריה
+
+## פורמט HTML:
+<h2 style="color:#b0d85a;font-size:16px;margin:0 0 14px;padding-bottom:8px;border-bottom:2px solid rgba(147,201,62,0.4)">רשימת תיוג ל...</h2>
 <h3 style="color:#e2c47a;margin:14px 0 6px;font-size:15px;border-bottom:1px solid rgba(201,168,76,0.3);padding-bottom:4px">כותרת חלק</h3>
 <ul style="margin:4px 0 12px;padding-right:20px;line-height:2.1">
 <li>✅ פריט לביצוע</li>
 </ul>
-<div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:6px;padding:7px 12px;margin:6px 0;font-size:12.5px;color:#e2c47a">📋 מקור: שם תקנה + סעיף</div>
-
-## חוקי ברזל:
-- כל פריט מתחיל ב-✅
-- כל קטגוריה פותחת בכותרת h3
-- אחרי כל קטגוריה — תיבת מקור חוקי קצרה (div כנ"ל)
-- אסור markdown, backticks, JSON — HTML בלבד
-- הרשימה חייבת להיות מפורטת ומלאה — לפחות 4 קטגוריות, לפחות 4 פריטים בכל קטגוריה`;
+<div style="background:rgba(201,168,62,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:6px;padding:7px 12px;margin:6px 0;font-size:12.5px;color:#e2c47a">📋 מקור: שם תקנה + סעיף</div>`;
 
 const CHECKLIST_PROMPTS = {
   'עובד': `השיחה שלנו עסקה בנושאי בטיחות. כעת צור רשימת תיוג מפורטת לעובד בשטח עם ארבעה חלקים:
@@ -876,6 +904,9 @@ async function generateChecklist() {
     const data = await resp.json();
     const html = sanitizeHtml(data.text || '');
     document.getElementById('checklist-content').innerHTML = html || '<p style="color:#e67e22">לא התקבל תוכן — נסה שוב.</p>';
+    // Update modal title from the h2 the model generated
+    const h2 = document.querySelector('#checklist-content h2');
+    if (h2) document.getElementById('checklist-role-label').textContent = h2.innerText.trim();
   } catch(e) {
     document.getElementById('checklist-content').innerHTML = '<p style="color:#e67e22">שגיאת חיבור — נסה שוב.</p>';
   }
@@ -1025,36 +1056,30 @@ function whatsappChecklist() {
   const content = document.getElementById('checklist-content');
   if (!content || !content.innerHTML.trim()) { showToast('אין רשימה לשליחה'); return; }
 
-  // strip emoji and extra whitespace from extracted text
   function cleanText(el) {
     return (el.innerText || '')
       .replace(/[\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}]|[\u{FE00}-\u{FEFF}]|[\u{1F300}-\u{1FAFF}]/gu, '')
       .replace(/\s+/g, ' ').trim();
   }
 
-  const lines = [];
-  lines.push(`*רשימת תיוג בטיחות - ${currentRole}*`);
-  lines.push('');
+  // Use the specific topic title from h2 if present
+  const h2 = content.querySelector('h2');
+  const title = h2 ? cleanText(h2) : `רשימת תיוג בטיחות - ${currentRole}`;
 
-  let section = '';
-  let subSection = '';
+  const lines = [];
+  lines.push(`*${title}*`);
+  lines.push('');
 
   content.querySelectorAll('h3, h4, li').forEach(el => {
     const text = cleanText(el);
     if (!text) return;
-
     if (el.tagName === 'H3') {
-      if (lines.length > 2) lines.push('');
-      section = text;
-      subSection = '';
+      lines.push('');
       lines.push(`*${text}*`);
     } else if (el.tagName === 'H4') {
-      subSection = text;
-      lines.push(`  _${text}_`);
+      lines.push(`_${text}_`);
     } else if (el.tagName === 'LI') {
-      const ctx = subSection || section;
-      const prefix = ctx ? `[${ctx}] ` : '';
-      lines.push(`- ${prefix}${text}`);
+      lines.push(`- ${text}`);
     }
   });
 
