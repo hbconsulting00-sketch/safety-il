@@ -26,11 +26,11 @@ const upload = multer({
 
 if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
 
-// ── PROXY TO GEMINI ──
+// ── PROXY TO CLAUDE ──
 app.post('/api/chat', async (req, res) => {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: 'GEMINI_API_KEY לא מוגדר בקובץ .env' });
+    return res.status(500).json({ error: 'ANTHROPIC_API_KEY לא מוגדר בקובץ .env' });
   }
 
   const { messages = [], system = '', max_tokens = 4000 } = req.body;
@@ -39,26 +39,23 @@ app.post('/api/chat', async (req, res) => {
     return res.status(400).json({ error: 'messages array is empty' });
   }
 
-  const contents = messages.map(m => ({
-    role: m.role === 'assistant' ? 'model' : 'user',
-    parts: [{ text: m.content }]
-  }));
-
-  const geminiBody = {
-    ...(system && { system_instruction: { parts: [{ text: system }] } }),
-    contents,
-    generationConfig: { maxOutputTokens: max_tokens, temperature: 0.2 }
+  const claudeBody = {
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens,
+    ...(system && { system }),
+    messages: messages.map(m => ({ role: m.role, content: m.content }))
   };
 
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(geminiBody)
-      }
-    );
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify(claudeBody)
+    });
 
     const data = await response.json();
 
@@ -66,10 +63,10 @@ app.post('/api/chat', async (req, res) => {
       return res.status(500).json({ error: data.error.message });
     }
 
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const text = data.content?.[0]?.text || '';
     res.json({ text });
   } catch (err) {
-    console.error('Gemini API error:', err);
+    console.error('Claude API error:', err);
     res.status(500).json({ error: err.message });
   }
 });
