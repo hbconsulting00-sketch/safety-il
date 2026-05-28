@@ -49,24 +49,24 @@ body { font-family: 'Rubik', sans-serif; font-weight: 400; font-optical-sizing: 
 
 #header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 20px; display: flex; align-items: center; gap: 14px; height: 58px; flex-shrink: 0; box-shadow: var(--shadow-sm); }
 #logo { display: flex; align-items: center; gap: 10px; }
-#logo-icon { width: 34px; height: 34px; background: var(--gold); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--navy); font-size: 18px; }
-#logo-text { font-family: 'Frank Ruhl Libre', serif; font-size: 18px; color: var(--gold-light); }
-#logo-sub { font-size: 11px; color: var(--text-muted); font-weight: 300; }
+#logo-icon { width: 36px; height: 36px; background: var(--gold); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--navy); font-size: 20px; }
+#logo-text { font-family: 'Frank Ruhl Libre', serif; font-size: 20px; color: var(--gold-light); }
+#logo-sub { font-size: 13px; color: var(--text-muted); font-weight: 300; }
 #header-right { margin-right: auto; display: flex; align-items: center; gap: 10px; }
-.status-pill { display: flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); font-size: 11px; color: var(--text-muted); }
+.status-pill { display: flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); font-size: 13px; color: var(--text-muted); }
 .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green-light); animation: blink 2s ease-in-out infinite; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
-#status-text { font-size: 11px; color: var(--text-muted); }
+#status-text { font-size: 13px; color: var(--text-muted); }
 /* ROLE BAR — now at top, above toolbar */
 #role-bar { display: flex; gap: 6px; padding: 8px 20px; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; align-items: center; }
-#role-label { font-size: 11px; color: var(--text-muted); margin-left: 4px; }
-.role-btn { padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); font-size: 11.5px; font-weight: 500; font-family: 'Rubik', sans-serif; cursor: pointer; transition: all 0.15s; }
+#role-label { font-size: 13px; color: var(--text-muted); margin-left: 4px; }
+.role-btn { padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); font-size: 13.5px; font-weight: 500; font-family: 'Rubik', sans-serif; cursor: pointer; transition: all 0.15s; }
 .role-btn.active, .role-btn:hover { background: rgba(100,20,20,0.08); border-color: var(--gold); color: var(--gold-light); }
 
 /* TOOLBAR */
 #toolbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 7px 20px; display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
-#toolbar-label { font-size: 10px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 0.08em; margin-left: 6px; }
-.tool-btn { display: flex; align-items: center; gap: 5px; padding: 5px 13px; border-radius: 20px; border: 1px solid var(--border-strong); background: rgba(100,20,20,0.06); color: var(--gold-light); font-size: 12.5px; font-weight: 500; font-family: 'Rubik', sans-serif; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+#toolbar-label { font-size: 12px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 0.08em; margin-left: 6px; }
+.tool-btn { display: flex; align-items: center; gap: 5px; padding: 5px 13px; border-radius: 20px; border: 1px solid var(--border-strong); background: rgba(100,20,20,0.06); color: var(--gold-light); font-size: 14px; font-weight: 500; font-family: 'Rubik', sans-serif; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
 .tool-btn:hover { background: rgba(100,20,20,0.12); border-color: var(--gold); }
 .tool-btn-sep { width: 1px; height: 18px; background: var(--border); margin: 0 2px; }
 .tool-btn-new { border-color: rgba(90,30,120,0.4) !important; color: #6b1a94 !important; background: rgba(90,30,120,0.06) !important; }
@@ -77,24 +77,24 @@ body { font-family: 'Rubik', sans-serif; font-weight: 400; font-optical-sizing: 
 /* SIDEBAR */
 #sidebar { width: 260px; background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; box-shadow: -2px 0 8px rgba(0,0,0,0.05); }
 #sidebar-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-.stab { flex: 1; padding: 9px 4px; background: transparent; border: none; border-bottom: 2px solid transparent; color: var(--text-muted); font-size: 11px; font-family: 'Rubik', sans-serif; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+.stab { flex: 1; padding: 9px 4px; background: transparent; border: none; border-bottom: 2px solid transparent; color: var(--text-muted); font-size: 13px; font-family: 'Rubik', sans-serif; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
 .stab:hover { color: var(--white); background: rgba(100,20,20,0.04); }
 .stab.active { color: var(--gold-light); border-bottom-color: var(--gold); background: rgba(100,20,20,0.06); }
 .stab-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 .stab-panel[hidden] { display: none; }
 #docs-list { flex: 1; overflow-y: auto; padding: 8px; }
-.doc-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 7px; font-size: 12.5px; color: var(--white-dim); cursor: pointer; transition: background 0.15s; border: 1px solid transparent; margin-bottom: 2px; }
+.doc-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 7px; font-size: 14px; color: var(--white-dim); cursor: pointer; transition: background 0.15s; border: 1px solid transparent; margin-bottom: 2px; }
 .doc-item:hover { background: rgba(100,20,20,0.05); }
 .doc-item.active { background: rgba(100,20,20,0.08); border-color: var(--gold-dim); color: var(--gold-light); }
-.doc-icon { font-size: 15px; flex-shrink: 0; }
-.doc-badge { margin-right: auto; font-size: 10px; padding: 2px 6px; border-radius: 10px; background: rgba(100,20,20,0.08); color: var(--gold-light); border: 1px solid rgba(100,20,20,0.2); }
+.doc-icon { font-size: 16px; flex-shrink: 0; }
+.doc-badge { margin-right: auto; font-size: 12px; padding: 2px 6px; border-radius: 10px; background: rgba(100,20,20,0.08); color: var(--gold-light); border: 1px solid rgba(100,20,20,0.2); }
 .doc-badge.uploaded { background: rgba(26,122,74,0.10); color: var(--green); border-color: rgba(26,122,74,0.25); }
-.sidebar-section { padding: 10px 16px 6px; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--gold-dim); border-top: 1px solid var(--border); margin-top: 4px; }
-#upload-zone { margin: 8px; border: 1.5px dashed var(--border-strong); border-radius: var(--radius); padding: 16px; text-align: center; cursor: pointer; transition: all 0.2s; color: var(--text-muted); font-size: 12px; }
+.sidebar-section { padding: 10px 16px 6px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--gold-dim); border-top: 1px solid var(--border); margin-top: 4px; }
+#upload-zone { margin: 8px; border: 1.5px dashed var(--border-strong); border-radius: var(--radius); padding: 16px; text-align: center; cursor: pointer; transition: all 0.2s; color: var(--text-muted); font-size: 14px; }
 #upload-zone:hover, #upload-zone.drag-over { border-color: var(--gold); background: rgba(100,20,20,0.04); color: var(--gold-light); }
 #upload-zone .up-icon { font-size: 22px; margin-bottom: 6px; display: block; }
 #file-input { display: none; }
-.doc-del { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; flex-shrink: 0; padding: 2px 4px; margin-right: auto; }
+.doc-del { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 16px; flex-shrink: 0; padding: 2px 4px; margin-right: auto; }
 .doc-del:hover { color: var(--red-light); }
 
 /* MAIN */
@@ -104,10 +104,10 @@ body { font-family: 'Rubik', sans-serif; font-weight: 400; font-optical-sizing: 
 #messages::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
 .msg-row { display: flex; gap: 10px; align-items: flex-start; }
 .msg-row.user { flex-direction: row-reverse; }
-.avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+.avatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
 .avatar.bot { background: linear-gradient(135deg, oklch(0.92 0.01 6.90), oklch(0.85 0.04 6.90)); color: var(--gold); border: 1px solid rgba(100,20,20,0.2); }
 .avatar.user { background: var(--navy-mid); color: var(--white-dim); border: 1px solid var(--border); }
-.bubble { border-radius: 14px; padding: 14px 18px; font-size: 14px; font-weight: 400; line-height: 1.8; }
+.bubble { border-radius: 14px; padding: 14px 18px; font-size: 16px; font-weight: 400; line-height: 1.8; }
 .bubble.user { max-width: 70%; background: var(--navy-mid); border: 1px solid var(--border); color: var(--white); border-top-left-radius: 4px; }
 .bubble.bot { max-width: 88%; background: var(--surface); border: 1px solid var(--border); color: var(--white); border-top-right-radius: 4px; box-shadow: var(--shadow-sm); }
 .typing-dots { display: flex; align-items: center; gap: 4px; padding: 4px 0; }
@@ -115,65 +115,65 @@ body { font-family: 'Rubik', sans-serif; font-weight: 400; font-optical-sizing: 
 .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
 .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
 @keyframes bounce { 0%,80%,100%{transform:scale(0.7);opacity:0.4} 40%{transform:scale(1);opacity:1} }
-.user-context-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 3px 8px; background: rgba(91,155,213,0.15); border: 1px solid rgba(91,155,213,0.3); border-radius: 12px; color: #5b9bd5; margin-bottom: 8px; }
+.user-context-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; padding: 3px 8px; background: rgba(91,155,213,0.15); border: 1px solid rgba(91,155,213,0.3); border-radius: 12px; color: #5b9bd5; margin-bottom: 8px; }
 
 #quick-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 20px 10px; background: var(--surface); border-top: 1px solid var(--border); flex-shrink: 0; }
-#quick-title { width: 100%; font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; }
-.quick-btn { padding: 5px 11px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--white-dim); font-size: 12px; font-family: 'Rubik', sans-serif; cursor: pointer; transition: all 0.15s; }
+#quick-title { width: 100%; font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; }
+.quick-btn { padding: 5px 11px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--white-dim); font-size: 14px; font-family: 'Rubik', sans-serif; cursor: pointer; transition: all 0.15s; }
 .quick-btn:hover { background: var(--navy-mid); border-color: var(--border-strong); color: var(--white); }
 
 /* ACTION BAR */
 #action-bar { display: none; gap: 6px; padding: 6px 20px 8px; background: var(--surface); border-top: 1px solid var(--border); flex-shrink: 0; flex-wrap: wrap; align-items: center; }
-#action-bar-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; width: 100%; }
-.action-btn { padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border-strong); background: rgba(100,20,20,0.05); color: var(--gold-light); font-size: 12px; font-family: 'Rubik', sans-serif; cursor: pointer; transition: all 0.15s; }
+#action-bar-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; width: 100%; }
+.action-btn { padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border-strong); background: rgba(100,20,20,0.05); color: var(--gold-light); font-size: 14px; font-family: 'Rubik', sans-serif; cursor: pointer; transition: all 0.15s; }
 .action-btn:hover { background: rgba(100,20,20,0.10); border-color: var(--gold); }
 
 #input-bar { display: flex; gap: 10px; padding: 12px 20px; background: var(--surface); border-top: 1px solid var(--border); align-items: flex-end; flex-shrink: 0; box-shadow: 0 -2px 8px rgba(0,0,0,0.04); }
-#text-input { flex: 1; background: var(--navy); border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 10px 14px; color: var(--white); font-family: 'Rubik', sans-serif; font-size: 14px; font-weight: 400; outline: none; resize: none; min-height: 42px; max-height: 120px; line-height: 1.5; transition: border 0.15s, box-shadow 0.15s; direction: rtl; }
+#text-input { flex: 1; background: var(--navy); border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 10px 14px; color: var(--white); font-family: 'Rubik', sans-serif; font-size: 16px; font-weight: 400; outline: none; resize: none; min-height: 46px; max-height: 120px; line-height: 1.5; transition: border 0.15s, box-shadow 0.15s; direction: rtl; }
 #text-input::placeholder { color: var(--text-muted); }
 #text-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(100,20,20,0.08); }
 #send-btn { width: 42px; height: 42px; border-radius: 50%; background: var(--gold); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.15s, transform 0.1s; }
 #send-btn:hover { background: var(--gold-light); transform: scale(1.05); }
 #send-btn:disabled { background: var(--gold-dim); cursor: not-allowed; transform: none; }
 #send-btn svg { width: 16px; height: 16px; fill: white; }
-#disclaimer { font-size: 10.5px; color: var(--text-muted); text-align: center; padding: 4px 20px 6px; background: var(--surface); border-top: 1px solid var(--border); flex-shrink: 0; }
+#disclaimer { font-size: 12.5px; color: var(--text-muted); text-align: center; padding: 4px 20px 6px; background: var(--surface); border-top: 1px solid var(--border); flex-shrink: 0; }
 
 #welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 10px; text-align: center; padding: 40px 30px; color: var(--text-muted); }
 #welcome-icon { font-size: 42px; margin-bottom: 6px; }
-#welcome h2 { font-family: 'Frank Ruhl Libre', serif; font-size: 22px; color: var(--gold-light); font-weight: 700; }
-#welcome p { font-size: 14px; line-height: 1.7; max-width: 360px; }
+#welcome h2 { font-family: 'Frank Ruhl Libre', serif; font-size: 24px; color: var(--gold-light); font-weight: 700; }
+#welcome p { font-size: 16px; line-height: 1.7; max-width: 360px; }
 .welcome-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 4px; }
-.welcome-tag { padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); font-size: 11.5px; color: var(--white-dim); }
+.welcome-tag { padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); font-size: 13.5px; color: var(--white-dim); }
 #docs-list::-webkit-scrollbar { width: 3px; }
 #docs-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-#error-banner { display: none; background: rgba(192,57,43,0.08); border: 1px solid rgba(192,57,43,0.3); color: #8b1a1a; font-size: 12px; padding: 8px 20px; text-align: center; flex-shrink: 0; }
+#error-banner { display: none; background: rgba(192,57,43,0.08); border: 1px solid rgba(192,57,43,0.3); color: #8b1a1a; font-size: 14px; padding: 8px 20px; text-align: center; flex-shrink: 0; }
 
 /* Content rendering */
-.md-h2 { font-size: 15.5px; font-weight: 700; color: var(--gold-light); margin: 16px 0 6px; padding-bottom: 5px; border-bottom: 1px solid rgba(100,20,20,0.2); line-height: 1.4; }
+.md-h2 { font-size: 17.5px; font-weight: 700; color: var(--gold-light); margin: 16px 0 6px; padding-bottom: 5px; border-bottom: 1px solid rgba(100,20,20,0.2); line-height: 1.4; }
 .md-h2:first-child { margin-top: 4px; }
-.md-h3 { font-size: 14px; font-weight: 600; color: var(--white); margin: 12px 0 4px; }
-.md-p { font-size: 14px; line-height: 1.8; color: var(--white); margin: 3px 0; }
-.md-li { display: flex; align-items: flex-start; gap: 8px; font-size: 14px; line-height: 1.8; color: var(--white-dim); padding: 2px 0; }
+.md-h3 { font-size: 16px; font-weight: 600; color: var(--white); margin: 12px 0 4px; }
+.md-p { font-size: 16px; line-height: 1.8; color: var(--white); margin: 3px 0; }
+.md-li { display: flex; align-items: flex-start; gap: 8px; font-size: 16px; line-height: 1.8; color: var(--white-dim); padding: 2px 0; }
 .md-li-dot { color: var(--gold); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
-.tag-legal { display: inline-block; background: rgba(26,100,62,0.12); color: #1a5a32; border: 1px solid rgba(26,100,62,0.3); border-radius: 4px; padding: 1px 8px; font-size: 11.5px; font-weight: 700; margin: 0 2px; vertical-align: middle; }
-.tag-forbidden { display: inline-block; background: rgba(140,25,25,0.10); color: #8b1a1a; border: 1px solid rgba(140,25,25,0.3); border-radius: 4px; padding: 1px 8px; font-size: 11.5px; font-weight: 700; margin: 0 2px; vertical-align: middle; }
-.tag-recommend { display: inline-block; background: rgba(30,58,95,0.10); color: #1e3a5f; border: 1px solid rgba(30,58,95,0.3); border-radius: 4px; padding: 1px 8px; font-size: 11.5px; font-weight: 700; margin: 0 2px; vertical-align: middle; }
-.citation-box { background: rgba(100,20,20,0.05); border: 1px solid rgba(100,20,20,0.2); border-right: 3px solid var(--gold); border-radius: 6px; padding: 7px 12px; font-size: 13px; color: var(--gold-light); line-height: 1.65; margin: 4px 0; }
-.ans-clarify { font-size: 14px; color: #1e3a5f; background: rgba(30,58,95,0.06); border: 1px solid rgba(30,58,95,0.2); border-radius: 8px; padding: 12px 16px; }
+.tag-legal { display: inline-block; background: rgba(26,100,62,0.12); color: #1a5a32; border: 1px solid rgba(26,100,62,0.3); border-radius: 4px; padding: 1px 8px; font-size: 13.5px; font-weight: 700; margin: 0 2px; vertical-align: middle; }
+.tag-forbidden { display: inline-block; background: rgba(140,25,25,0.10); color: #8b1a1a; border: 1px solid rgba(140,25,25,0.3); border-radius: 4px; padding: 1px 8px; font-size: 13.5px; font-weight: 700; margin: 0 2px; vertical-align: middle; }
+.tag-recommend { display: inline-block; background: rgba(30,58,95,0.10); color: #1e3a5f; border: 1px solid rgba(30,58,95,0.3); border-radius: 4px; padding: 1px 8px; font-size: 13.5px; font-weight: 700; margin: 0 2px; vertical-align: middle; }
+.citation-box { background: rgba(100,20,20,0.05); border: 1px solid rgba(100,20,20,0.2); border-right: 3px solid var(--gold); border-radius: 6px; padding: 7px 12px; font-size: 15px; color: var(--gold-light); line-height: 1.65; margin: 4px 0; }
+.ans-clarify { font-size: 16px; color: #1e3a5f; background: rgba(30,58,95,0.06); border: 1px solid rgba(30,58,95,0.2); border-radius: 8px; padding: 12px 16px; }
 
 /* MODALS */
 .modal-wrap { display: none; position: fixed; inset: 0; z-index: 200; align-items: center; justify-content: center; padding: 20px; }
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 0; }
 .modal-box { position: relative; z-index: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 760px; min-height: 400px; max-height: 88vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--shadow-md); }
 .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); flex-shrink: 0; gap: 10px; }
-.modal-title { font-size: 14px; font-weight: 600; color: var(--gold-light); }
+.modal-title { font-size: 16px; font-weight: 600; color: var(--gold-light); }
 .modal-actions { display: flex; gap: 7px; align-items: center; }
-.modal-btn { padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border-strong); background: rgba(100,20,20,0.06); color: var(--gold-light); font-size: 12px; font-family: 'Rubik', sans-serif; cursor: pointer; transition: all 0.15s; }
+.modal-btn { padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border-strong); background: rgba(100,20,20,0.06); color: var(--gold-light); font-size: 14px; font-family: 'Rubik', sans-serif; cursor: pointer; transition: all 0.15s; }
 .modal-btn:hover { background: rgba(100,20,20,0.12); }
-.modal-close { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); background: transparent; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; transition: all 0.15s; flex-shrink: 0; }
+.modal-close { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); background: transparent; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 17px; transition: all 0.15s; flex-shrink: 0; }
 .modal-close:hover { background: rgba(255,255,255,0.07); color: var(--white); }
-.modal-body { flex: 1; overflow-y: auto; padding: 16px 18px; color: var(--white); font-size: 14px; line-height: 1.75; }
+.modal-body { flex: 1; overflow-y: auto; padding: 16px 18px; color: var(--white); font-size: 16px; line-height: 1.75; }
 .modal-body::-webkit-scrollbar { width: 4px; }
 .modal-body::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
 
@@ -181,11 +181,11 @@ body { font-family: 'Rubik', sans-serif; font-weight: 400; font-optical-sizing: 
 .hist-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 8px; cursor: pointer; transition: background 0.15s; }
 .hist-item:hover { background: rgba(100,20,20,0.05); }
 .hist-info { flex: 1; min-width: 0; }
-.hist-title { font-size: 13.5px; color: var(--white-dim); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.hist-meta { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-muted); }
-.hist-del { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 15px; padding: 4px 6px; transition: color 0.15s; flex-shrink: 0; }
+.hist-title { font-size: 15.5px; color: var(--white-dim); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hist-meta { display: flex; align-items: center; gap: 6px; font-size: 13.5px; color: var(--text-muted); }
+.hist-del { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 17px; padding: 4px 6px; transition: color 0.15s; flex-shrink: 0; }
 .hist-del:hover { color: var(--red-light); }
-.hist-empty { text-align: center; color: var(--text-muted); padding: 40px 20px; font-size: 13px; line-height: 1.8; }
+.hist-empty { text-align: center; color: var(--text-muted); padding: 40px 20px; font-size: 15px; line-height: 1.8; }
 
 /* Sidebar mobile toggle */
 #sidebar-toggle { display: none; width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); cursor: pointer; font-size: 18px; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
@@ -223,27 +223,27 @@ body { font-family: 'Rubik', sans-serif; font-weight: 400; font-optical-sizing: 
   #toolbar::-webkit-scrollbar { display: none; }
   #toolbar-label { display: none; }
   .tool-btn-sep { display: none; }
-  .tool-btn { font-size: 12px; padding: 5px 11px; }
+  .tool-btn { font-size: 13.5px; padding: 5px 11px; }
 
   /* Role bar: horizontal scroll */
   #role-bar { flex-wrap: nowrap; overflow-x: auto; padding: 7px 12px; scrollbar-width: none; }
   #role-bar::-webkit-scrollbar { display: none; }
   #role-label { display: none; }
-  .role-btn { font-size: 11px; padding: 4px 10px; flex-shrink: 0; }
+  .role-btn { font-size: 13px; padding: 4px 10px; flex-shrink: 0; }
   /* Sidebar tabs compact */
-  .stab { font-size: 10px; padding: 8px 2px; }
+  .stab { font-size: 12px; padding: 8px 2px; }
 
   /* Quick row: horizontal scroll */
   #quick-row { flex-wrap: nowrap; overflow-x: auto; padding: 5px 12px 8px; scrollbar-width: none; }
   #quick-row::-webkit-scrollbar { display: none; }
   #quick-title { display: none; }
-  .quick-btn { flex-shrink: 0; font-size: 11.5px; }
+  .quick-btn { flex-shrink: 0; font-size: 13.5px; }
 
   /* Messages */
   #messages { padding: 12px; gap: 12px; }
   .bubble.user { max-width: 92%; }
   .bubble.bot { max-width: 98%; }
-  .bubble { padding: 11px 14px; font-size: 13.5px; }
+  .bubble { padding: 11px 14px; font-size: 15.5px; }
 
   /* Input bar */
   #input-bar { padding: 8px 12px; }
@@ -254,8 +254,8 @@ body { font-family: 'Rubik', sans-serif; font-weight: 400; font-optical-sizing: 
   .modal-box { border-radius: 16px 16px 0 0; max-height: 92vh; min-height: 320px; }
 
   /* Error banner */
-  #error-banner { font-size: 11px; padding: 6px 12px; }
-  #disclaimer { font-size: 10px; padding: 4px 12px 5px; }
+  #error-banner { font-size: 13px; padding: 6px 12px; }
+  #disclaimer { font-size: 12px; padding: 4px 12px 5px; }
 }
 
 /* Print header (hidden normally) */
@@ -358,13 +358,13 @@ body { font-family: 'Rubik', sans-serif; font-weight: 400; font-optical-sizing: 
     <!-- TAB: נהלי חברה -->
     <div id="stab-company" class="stab-panel" hidden>
       <div id="uploaded-docs-list" style="flex:1;overflow-y:auto;padding:8px;"></div>
-      <div id="company-empty" style="flex:1;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;color:var(--text-muted);font-size:12.5px;line-height:1.7">
+      <div id="company-empty" style="flex:1;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;color:var(--text-muted);font-size:14px;line-height:1.7">
         העלי נהלי חברה<br>כדי לקבל תשובות המותאמות<br>לנהלים הפנימיים שלך
       </div>
       <div id="upload-zone" onclick="document.getElementById('file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
         <span class="up-icon">⬆️</span>
-        <strong style="font-size:12.5px;color:var(--white-dim)">העלה נהלי חברה</strong>
-        <div style="margin-top:4px;font-size:11px">PDF · Word · TXT</div>
+        <strong style="font-size:14px;color:var(--white-dim)">העלה נהלי חברה</strong>
+        <div style="margin-top:4px;font-size:13px">PDF · Word · TXT</div>
       </div>
       <input type="file" id="file-input" accept=".pdf,.doc,.docx,.txt" multiple onchange="handleFileInput(this.files)">
     </div>
@@ -494,60 +494,60 @@ const SYSTEM_PROMPT = `אתה SafetyIL — עוזר בטיחות תעסוקתי�
 השתמש אך ורק בתגיות הבאות:
 
 כותרת ראשית:
-<h3 style="color:#7a1c1c;margin:16px 0 8px;font-size:15px;border-bottom:1px solid rgba(100,20,20,0.2);padding-bottom:4px">כותרת</h3>
+<h3 style="color:#7a1c1c;margin:16px 0 8px;font-size:17px;border-bottom:1px solid rgba(100,20,20,0.2);padding-bottom:4px">כותרת</h3>
 
 כותרת משנה:
-<h4 style="color:#252d45;margin:10px 0 5px;font-size:13.5px">כותרת</h4>
+<h4 style="color:#252d45;margin:10px 0 5px;font-size:15.5px">כותרת</h4>
 
 פסקה:
-<p style="margin:5px 0;line-height:1.85">טקסט</p>
+<p style="margin:5px 0;line-height:1.85;font-size:16px">טקסט</p>
 
 רשימה:
-<ul style="margin:4px 0 8px 0;padding-right:20px;line-height:2">
+<ul style="margin:4px 0 8px 0;padding-right:20px;line-height:2;font-size:16px">
 <li>פריט</li>
 </ul>
 
 תג חובה חוקית (מוסיפים ליד הפריט):
-<span style="background:#1a7a4a;color:white;padding:2px 8px;border-radius:4px;font-size:12px;margin-left:6px;white-space:nowrap">חובה חוקית</span>
+<span style="background:#1a7a4a;color:white;padding:2px 8px;border-radius:4px;font-size:14px;margin-left:6px;white-space:nowrap">חובה חוקית</span>
 
 תג אסור לפי חוק:
-<span style="background:#c0392b;color:white;padding:2px 8px;border-radius:4px;font-size:12px;margin-left:6px;white-space:nowrap">אסור לפי חוק</span>
+<span style="background:#c0392b;color:white;padding:2px 8px;border-radius:4px;font-size:14px;margin-left:6px;white-space:nowrap">אסור לפי חוק</span>
 
 תג המלצה מקצועית:
-<span style="background:#2e81c5;color:white;padding:2px 8px;border-radius:4px;font-size:12px;margin-left:6px;white-space:nowrap">המלצה</span>
+<span style="background:#2e81c5;color:white;padding:2px 8px;border-radius:4px;font-size:14px;margin-left:6px;white-space:nowrap">המלצה</span>
 
 מקור חוקי (לכל ציטוט נפרד):
-<div style="background:rgba(100,20,20,0.05);border:1px solid rgba(100,20,20,0.25);border-radius:6px;padding:8px 12px;margin:6px 0;font-size:13px;color:#7a1c1c">📋 מקור: שם תקנה + סעיף + שנה</div>
+<div style="background:rgba(100,20,20,0.05);border:1px solid rgba(100,20,20,0.25);border-radius:6px;padding:8px 12px;margin:6px 0;font-size:15px;color:#7a1c1c">📋 מקור: שם תקנה + סעיף + שנה</div>
 
 אזהרה:
-<div style="background:rgba(192,57,43,0.08);border-right:3px solid #c03030;border-radius:6px;padding:8px 12px;margin:8px 0;color:#8b1a1a">⛔ טקסט אזהרה</div>
+<div style="background:rgba(192,57,43,0.08);border-right:3px solid #c03030;border-radius:6px;padding:8px 12px;margin:8px 0;color:#8b1a1a;font-size:16px">⛔ טקסט אזהרה</div>
 
 פעולה נדרשת — בסוף כל תשובה חובה:
 <div style="background:rgba(30,58,95,0.06);border:1px solid rgba(30,58,95,0.2);border-radius:6px;padding:10px 14px;margin:14px 0 4px">
-<div style="color:#1e3a5f;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">▶ פעולה נדרשת</div>
-<ul style="margin:0;padding-right:18px;line-height:2">
+<div style="color:#1e3a5f;font-size:13.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">▶ פעולה נדרשת</div>
+<ul style="margin:0;padding-right:18px;line-height:2;font-size:16px">
 <li>צעד ראשון</li>
 <li>צעד שני</li>
 </ul>
 </div>
 
 שאלת הבהרה (כשהשאלה מעורפלת):
-<div style="background:rgba(30,58,95,0.06);border:1px solid rgba(30,58,95,0.22);border-radius:8px;padding:12px 16px;color:#1e3a5f">❓ שאלת ההבהרה</div>
+<div style="background:rgba(30,58,95,0.06);border:1px solid rgba(30,58,95,0.22);border-radius:8px;padding:12px 16px;color:#1e3a5f;font-size:16px">❓ שאלת ההבהרה</div>
 
 מצב ללא מידע:
-<div style="background:rgba(140,80,0,0.07);border:1px solid rgba(140,80,0,0.25);border-radius:8px;padding:10px 14px;color:#7a4500">⚠️ הסבר למה אין מידע זמין</div>`;
+<div style="background:rgba(140,80,0,0.07);border:1px solid rgba(140,80,0,0.25);border-radius:8px;padding:10px 14px;color:#7a4500;font-size:16px">⚠️ הסבר למה אין מידע זמין</div>`;
 
 const ROLE_PROMPTS = {
   'עובד': `## ⚠️ כלל עליון — תפקיד: עובד בשטח
 שנה את כל פורמט התשובה לחלוטין עבור עובד:
 
 פורמט חובה:
-<h3 style="color:#7a1c1c;margin:8px 0 6px;font-size:15px">מה אתה צריך לעשות</h3>
-<ul style="margin:4px 0 10px;padding-right:20px;line-height:2.2">
+<h3 style="color:#7a1c1c;margin:8px 0 6px;font-size:17px">מה אתה צריך לעשות</h3>
+<ul style="margin:4px 0 10px;padding-right:20px;line-height:2.2;font-size:16px">
 <li>כל צעד בשורה</li>
 </ul>
-<h3 style="color:#c03030;margin:10px 0 6px;font-size:15px">מה אסור בשום פנים</h3>
-<ul style="margin:4px 0 10px;padding-right:20px;line-height:2.2">
+<h3 style="color:#c03030;margin:10px 0 6px;font-size:17px">מה אסור בשום פנים</h3>
+<ul style="margin:4px 0 10px;padding-right:20px;line-height:2.2;font-size:16px">
 <li>איסור</li>
 </ul>
 <div style="background:rgba(30,58,95,0.06);border:1px solid rgba(30,58,95,0.22);border-radius:8px;padding:10px 14px;margin:10px 0">
@@ -652,7 +652,7 @@ function renderUploadedDocs() {
   list.innerHTML = uploadedDocs.map((d, i) => `
     <div class="doc-item" style="background:rgba(26,122,74,0.1);border-color:rgba(39,174,96,0.2)">
       <span class="doc-icon">📄</span>
-      <span style="font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.name}</span>
+      <span style="font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.name}</span>
       <button class="doc-del" onclick="removeDoc(${i})">✕</button>
     </div>`).join('');
 }
@@ -702,7 +702,7 @@ function addSystemMsg(text) {
   const msgs = document.getElementById('messages');
   const el = document.createElement('div');
   el.className = 'msg-row';
-  el.innerHTML = `<div class="avatar bot">🛡️</div><div class="bubble bot system-msg" style="font-size:13px;color:var(--text-muted)">${text}</div>`;
+  el.innerHTML = `<div class="avatar bot">🛡️</div><div class="bubble bot system-msg" style="font-size:15px;color:var(--text-muted)">${text}</div>`;
   msgs.appendChild(el); msgs.scrollTop = msgs.scrollHeight;
 }
 
@@ -848,7 +848,7 @@ const CHECKLIST_SYSTEM = `אתה SafetyIL — עוזר בטיחות תעסוקת
 
 ## חוקי ברזל:
 - השורה הראשונה בתגובה חייבת להיות כותרת ספציפית לנושא השיחה:
-  <h2 style="color:#7a1c1c;font-size:16px;margin:0 0 14px;padding-bottom:8px;border-bottom:2px solid rgba(100,20,20,0.25)">רשימת תיוג ל[תאר כאן את הפעולה הספציפית מהשיחה, למשל: עבודה עם כלי ריתוך בחלל מוקף]</h2>
+  <h2 style="color:#7a1c1c;font-size:18px;margin:0 0 14px;padding-bottom:8px;border-bottom:2px solid rgba(100,20,20,0.25)">רשימת תיוג ל[תאר כאן את הפעולה הספציפית מהשיחה, למשל: עבודה עם כלי ריתוך בחלל מוקף]</h2>
   הכותרת חייבת להיות קונקרטית ומותאמת לשיחה — לא "רשימת תיוג בטיחות" גנרית!
 - כל פריט מתחיל ב-✅
 - כל קטגוריה פותחת בכותרת h3
@@ -857,12 +857,12 @@ const CHECKLIST_SYSTEM = `אתה SafetyIL — עוזר בטיחות תעסוקת
 - לפחות 4 קטגוריות, לפחות 4 פריטים בכל קטגוריה
 
 ## פורמט HTML:
-<h2 style="color:#7a1c1c;font-size:16px;margin:0 0 14px;padding-bottom:8px;border-bottom:2px solid rgba(100,20,20,0.25)">רשימת תיוג ל...</h2>
-<h3 style="color:#252d45;margin:14px 0 6px;font-size:15px;border-bottom:1px solid rgba(0,0,40,0.12);padding-bottom:4px">כותרת חלק</h3>
-<ul style="margin:4px 0 12px;padding-right:20px;line-height:2.1">
+<h2 style="color:#7a1c1c;font-size:18px;margin:0 0 14px;padding-bottom:8px;border-bottom:2px solid rgba(100,20,20,0.25)">רשימת תיוג ל...</h2>
+<h3 style="color:#252d45;margin:14px 0 6px;font-size:17px;border-bottom:1px solid rgba(0,0,40,0.12);padding-bottom:4px">כותרת חלק</h3>
+<ul style="margin:4px 0 12px;padding-right:20px;line-height:2.1;font-size:16px">
 <li>✅ פריט לביצוע</li>
 </ul>
-<div style="background:rgba(100,20,20,0.05);border:1px solid rgba(100,20,20,0.2);border-radius:6px;padding:7px 12px;margin:6px 0;font-size:12.5px;color:#7a1c1c">📋 מקור: שם תקנה + סעיף</div>`;
+<div style="background:rgba(100,20,20,0.05);border:1px solid rgba(100,20,20,0.2);border-radius:6px;padding:7px 12px;margin:6px 0;font-size:14.5px;color:#7a1c1c">📋 מקור: שם תקנה + סעיף</div>`;
 
 const CHECKLIST_PROMPTS = {
   'עובד': `השיחה שלנו עסקה בנושאי בטיחות. כעת צור רשימת תיוג מפורטת לעובד בשטח עם ארבעה חלקים:
