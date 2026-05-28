@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SafetyIL — עוזר בטיחות תעסוקתית</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&family=Frank+Ruhl+Libre:wght@400;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&family=Frank+Ruhl+Libre:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
 <style>
 :root {
@@ -44,7 +45,7 @@
   --radius: 10px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--white); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+body { font-family: 'Rubik', sans-serif; font-weight: 400; font-optical-sizing: auto; background: var(--navy); color: var(--white); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
 #header { background: var(--surface-2); border-bottom: 1px solid var(--border-strong); padding: 0 20px; display: flex; align-items: center; gap: 14px; height: 58px; flex-shrink: 0; }
 #logo { display: flex; align-items: center; gap: 10px; }
@@ -59,22 +60,24 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
 /* ROLE BAR — now at top, above toolbar */
 #role-bar { display: flex; gap: 6px; padding: 8px 20px; border-bottom: 1px solid var(--border); background: var(--surface-2); flex-shrink: 0; align-items: center; }
 #role-label { font-size: 11px; color: var(--text-muted); margin-left: 4px; }
-.role-btn { padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); font-size: 11.5px; font-family: 'Heebo', sans-serif; cursor: pointer; transition: all 0.15s; }
+.role-btn { padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); font-size: 11.5px; font-weight: 500; font-family: 'Rubik', sans-serif; cursor: pointer; transition: all 0.15s; }
 .role-btn.active, .role-btn:hover { background: rgba(201,168,76,0.12); border-color: var(--border-strong); color: var(--gold-light); }
 
 /* TOOLBAR */
 #toolbar { background: var(--surface-2); border-bottom: 1px solid var(--border); padding: 7px 20px; display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
 #toolbar-label { font-size: 10px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 0.08em; margin-left: 6px; }
-.tool-btn { display: flex; align-items: center; gap: 5px; padding: 5px 13px; border-radius: 20px; border: 1px solid var(--border-strong); background: rgba(201,168,76,0.07); color: var(--gold-light); font-size: 12.5px; font-family: 'Heebo', sans-serif; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+.tool-btn { display: flex; align-items: center; gap: 5px; padding: 5px 13px; border-radius: 20px; border: 1px solid var(--border-strong); background: rgba(201,168,76,0.07); color: var(--gold-light); font-size: 12.5px; font-weight: 500; font-family: 'Rubik', sans-serif; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
 .tool-btn:hover { background: rgba(201,168,76,0.18); border-color: var(--gold); }
 .tool-btn-sep { width: 1px; height: 18px; background: var(--border); margin: 0 2px; }
+.tool-btn-new { border-color: rgba(120,49,142,0.5) !important; color: #c084db !important; background: rgba(120,49,142,0.08) !important; }
+.tool-btn-new:hover { background: rgba(120,49,142,0.18) !important; border-color: rgba(180,100,210,0.7) !important; }
 
 #layout { display: flex; flex: 1; overflow: hidden; }
 
 /* SIDEBAR */
 #sidebar { width: 260px; background: var(--surface-2); border-left: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
 #sidebar-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-.stab { flex: 1; padding: 9px 4px; background: transparent; border: none; border-bottom: 2px solid transparent; color: var(--text-muted); font-size: 11px; font-family: 'Heebo', sans-serif; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+.stab { flex: 1; padding: 9px 4px; background: transparent; border: none; border-bottom: 2px solid transparent; color: var(--text-muted); font-size: 11px; font-family: 'Rubik', sans-serif; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
 .stab:hover { color: var(--white-dim); background: rgba(147,201,62,0.05); }
 .stab.active { color: var(--gold-light); border-bottom-color: var(--gold); background: rgba(147,201,62,0.07); }
 .stab-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
@@ -104,7 +107,7 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
 .avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
 .avatar.bot { background: linear-gradient(135deg, var(--navy-light), var(--gold-dim)); color: var(--gold-light); border: 1px solid var(--border-strong); }
 .avatar.user { background: var(--navy-mid); color: var(--white-dim); border: 1px solid var(--border); }
-.bubble { border-radius: 14px; padding: 14px 18px; font-size: 14px; line-height: 1.75; }
+.bubble { border-radius: 14px; padding: 14px 18px; font-size: 14px; font-weight: 400; line-height: 1.8; }
 .bubble.user { max-width: 70%; background: var(--navy-mid); border: 1px solid var(--border); color: var(--white-dim); border-top-left-radius: 4px; }
 .bubble.bot { max-width: 88%; background: var(--surface); border: 1px solid var(--border); color: var(--white); border-top-right-radius: 4px; }
 .typing-dots { display: flex; align-items: center; gap: 4px; padding: 4px 0; }
@@ -116,17 +119,17 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
 
 #quick-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 20px 10px; background: var(--surface-2); border-top: 1px solid var(--border); flex-shrink: 0; }
 #quick-title { width: 100%; font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; }
-.quick-btn { padding: 5px 11px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--white-dim); font-size: 12px; font-family: 'Heebo', sans-serif; cursor: pointer; transition: all 0.15s; }
+.quick-btn { padding: 5px 11px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--white-dim); font-size: 12px; font-family: 'Rubik', sans-serif; cursor: pointer; transition: all 0.15s; }
 .quick-btn:hover { background: var(--surface); border-color: var(--border-strong); color: var(--white); }
 
 /* ACTION BAR */
 #action-bar { display: none; gap: 6px; padding: 6px 20px 8px; background: var(--surface-2); border-top: 1px solid var(--border); flex-shrink: 0; flex-wrap: wrap; align-items: center; }
 #action-bar-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; width: 100%; }
-.action-btn { padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border-strong); background: rgba(201,168,76,0.06); color: var(--gold-light); font-size: 12px; font-family: 'Heebo', sans-serif; cursor: pointer; transition: all 0.15s; }
+.action-btn { padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border-strong); background: rgba(201,168,76,0.06); color: var(--gold-light); font-size: 12px; font-family: 'Rubik', sans-serif; cursor: pointer; transition: all 0.15s; }
 .action-btn:hover { background: rgba(201,168,76,0.15); border-color: var(--gold); }
 
 #input-bar { display: flex; gap: 10px; padding: 12px 20px; background: var(--surface-2); border-top: 1px solid var(--border-strong); align-items: flex-end; flex-shrink: 0; }
-#text-input { flex: 1; background: var(--navy); border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 10px 14px; color: var(--white); font-family: 'Heebo', sans-serif; font-size: 14px; outline: none; resize: none; min-height: 42px; max-height: 120px; line-height: 1.5; transition: border 0.15s; direction: rtl; }
+#text-input { flex: 1; background: var(--navy); border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 10px 14px; color: var(--white); font-family: 'Rubik', sans-serif; font-size: 14px; font-weight: 400; outline: none; resize: none; min-height: 42px; max-height: 120px; line-height: 1.5; transition: border 0.15s; direction: rtl; }
 #text-input::placeholder { color: var(--text-muted); }
 #text-input:focus { border-color: var(--gold); }
 #send-btn { width: 42px; height: 42px; border-radius: 50%; background: var(--gold); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.15s, transform 0.1s; }
@@ -166,7 +169,7 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
 .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); flex-shrink: 0; gap: 10px; }
 .modal-title { font-size: 14px; font-weight: 600; color: var(--gold-light); }
 .modal-actions { display: flex; gap: 7px; align-items: center; }
-.modal-btn { padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border-strong); background: rgba(201,168,76,0.08); color: var(--gold-light); font-size: 12px; font-family: 'Heebo', sans-serif; cursor: pointer; transition: all 0.15s; }
+.modal-btn { padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border-strong); background: rgba(201,168,76,0.08); color: var(--gold-light); font-size: 12px; font-family: 'Rubik', sans-serif; cursor: pointer; transition: all 0.15s; }
 .modal-btn:hover { background: rgba(201,168,76,0.2); }
 .modal-close { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); background: transparent; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; transition: all 0.15s; flex-shrink: 0; }
 .modal-close:hover { background: rgba(255,255,255,0.07); color: var(--white); }
@@ -305,15 +308,17 @@ body { font-family: 'Heebo', sans-serif; background: var(--navy); color: var(--w
 
 <div id="toolbar">
   <span id="toolbar-label">כלי עבודה:</span>
-  <button class="tool-btn" onclick="newConversation()" style="border-color:rgba(120,49,142,0.5);color:#c084db;background:rgba(120,49,142,0.08)" title="פתח שיחה חדשה">✏️ שיחה חדשה</button>
+  <!-- ניהול שיחה -->
+  <button class="tool-btn tool-btn-new" onclick="newConversation()" title="פתח שיחה חדשה">✏️ שיחה חדשה</button>
+  <button class="tool-btn" onclick="saveConversation()" title="שמור שיחה זו">💾 שמור</button>
   <div class="tool-btn-sep"></div>
+  <!-- ייצוא ופלט -->
   <button class="tool-btn" onclick="generateChecklist()" title="יצירת רשימת תיוג מהשיחה לפי תפקידך">📋 רשימת תיוג</button>
-  <div class="tool-btn-sep"></div>
   <button class="tool-btn" onclick="exportPDF()">📄 PDF</button>
   <button class="tool-btn" onclick="exportWord()">📝 Word</button>
   <div class="tool-btn-sep"></div>
-  <button class="tool-btn" onclick="saveConversation()">💾 שמור שיחה</button>
-  <button class="tool-btn" onclick="shareLink()">🔗 שתף</button>
+  <!-- שיתוף -->
+  <button class="tool-btn" onclick="shareLink()" title="שתף קישור לשיחה">🔗 שתף</button>
 </div>
 
 <div id="error-banner">⚠️ שגיאת חיבור — ודא שהשרת פועל: <code>node server.js</code></div>
@@ -446,32 +451,38 @@ let conversation = [];
 
 const SYSTEM_PROMPT = `אתה SafetyIL — עוזר בטיחות תעסוקתית ישראלי מקצועי ומוסמך.
 
-## עקרון מנחה
-לכל שאלת בטיחות — תשובה מקצועית, מפורטת ומדויקת.
+## ⚠️ מערכת סגורה — חוקים מחייבים ללא יוצא מן הכלל
 
-## מקורות בלעדיים
-1. פקודת הבטיחות בעבודה [נוסח חדש], תש"ל-1970
-2. תקנות הבטיחות בעבודה (עבודה בגובה), תשס"ז-2007
-3. תקנות הבטיחות בעבודה (עבודות בנייה), תשמ"ח-1988
-4. תקנות הבטיחות בעבודה (ניטור סביבתי וניטור ביולוגי), תש"ן-1990
-5. תקנות הבטיחות בעבודה (גהות תעסוקתית ואבק מזיק), תשמ"ד-1984
-6. תקנות הבטיחות בעבודה (עגורנאים, מפעילי מלגזות, ומכונות הרמה), תשנ"ג-1993
-7. תקנות ארגון הפיקוח על העבודה (ממונה על הבטיחות), תשנ"ו-1996
-8. תקנות החשמל (בטיחות)
-9. תקנות כיבוי אש
-10. הנחיות המוסד לבטיחות ולגיהות (מבט"ח)
-11. פרסומי משרד העבודה, הרווחה והשירותים החברתיים
-אם הועלו מסמכי נהלים פנימיים — הם מהווים מקור נוסף.
+1. **שפה**: ענה תמיד בעברית בלבד. גם אם הפנייה היא באנגלית — ענה בעברית.
 
-## כללים מחייבים
-1. ענה רק על שאלות בטיחות תעסוקתית.
-2. לכל דרישה — ציין מקור מדויק: שם תקנה מלא + מספר סעיף + תת-סעיף + שנה.
-3. סמן ליד כל פריט: חובה חוקית / המלצה מקצועית / אסור לפי חוק.
-4. אם חלות כמה תקנות — ציין את כולן.
-5. בסוף כל תשובה — הוסף "פעולה נדרשת" עם צעדים מעשיים.
-6. אם השאלה מעורפלת — שאל שאלת הבהרה אחת.
-7. אם אין מידע בחקיקה — אמור זאת. אל תמציא.
-8. במצב סכנה מיידית — הבלט זאת בראש התשובה.
+2. **נושא**: ענה אך ורק על שאלות הנוגעות לבטיחות תעסוקתית בישראל. אם השאלה אינה קשורה לבטיחות בעבודה, ענה בדיוק: "אני מתמחה בבטיחות תעסוקתית בלבד. אנא שאל שאלה הנוגעת לבטיחות בעבודה."
+
+3. **מקורות בלעדיים** — ענה רק על בסיס החקיקה הישראלית הבאה:
+   1. פקודת הבטיחות בעבודה [נוסח חדש], תש"ל-1970
+   2. תקנות הבטיחות בעבודה (עבודה בגובה), תשס"ז-2007
+   3. תקנות הבטיחות בעבודה (עבודות בנייה), תשמ"ח-1988
+   4. תקנות הבטיחות בעבודה (ניטור סביבתי וניטור ביולוגי), תש"ן-1990
+   5. תקנות הבטיחות בעבודה (גהות תעסוקתית ואבק מזיק), תשמ"ד-1984
+   6. תקנות הבטיחות בעבודה (עגורנאים, מפעילי מלגזות, ומכונות הרמה), תשנ"ג-1993
+   7. תקנות ארגון הפיקוח על העבודה (ממונה על הבטיחות), תשנ"ו-1996
+   8. תקנות החשמל (בטיחות)
+   9. תקנות כיבוי אש
+   10. הנחיות המוסד לבטיחות ולגיהות (מבט"ח)
+   11. פרסומי משרד העבודה, הרווחה והשירותים החברתיים
+   אם הועלו מסמכי נהלים פנימיים — הם מהווים מקור נוסף, אך אינם גוברים על החקיקה.
+
+4. **אין להמציא**: אסור לציין מספרי סעיפים, תקנות, הוראות או עונשים שאינם ידועים לך בוודאות מהמקורות לעיל. אם אינך בטוח במספר סעיף מדויק — כתוב "יש לבדוק בנוסח הרשמי" במקום לנחש.
+
+5. **כשאין מידע מספיק**: אם השאלה נכנסת לתחום הבטיחות אך אין לך מידע ספציפי מהחקיקה — ענה:
+   "לא מצאתי הוראה ספציפית לנושא זה בתקנות הבטיחות שברשותי. מומלץ לפנות לממונה הבטיחות או למשרד העבודה לקבלת הנחיה מדויקת."
+
+## כללי תשובה
+- לכל דרישה — ציין מקור מדויק: שם תקנה מלא + מספר סעיף + שנה (רק אם ידוע לך בוודאות).
+- סמן ליד כל פריט: חובה חוקית / המלצה מקצועית / אסור לפי חוק.
+- אם חלות כמה תקנות — ציין את כולן.
+- בסוף כל תשובה — הוסף "פעולה נדרשת" עם צעדים מעשיים.
+- אם השאלה מעורפלת — שאל שאלת הבהרה אחת.
+- במצב סכנה מיידית — הבלט זאת בראש התשובה.
 
 ## פורמט פלט — HTML בלבד
 החזר HTML בלבד. אסור JSON. אסור markdown. אסור backticks. אסור תגיות html/head/body/script/style.
