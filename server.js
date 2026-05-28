@@ -187,37 +187,61 @@ app.post('/api/chat', async (req, res) => {
     }
   ];
 
+  const baseMessages = messages.map(m => ({ role: m.role, content: m.content }));
+
   const claudeBody = {
     model: 'claude-sonnet-4-6',
     max_tokens,
     system: systemBlock,
-    messages: messages.map(m => ({ role: m.role, content: m.content }))
+    tools: [{
+      type: 'web_search_20250305',
+      name: 'web_search',
+      max_uses: 3
+    }]
+  };
+
+  const HEADERS = {
+    'Content-Type': 'application/json',
+    'x-api-key': apiKey,
+    'anthropic-version': '2023-06-01',
+    'anthropic-beta': 'prompt-caching-2024-07-31'
   };
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-beta': 'prompt-caching-2024-07-31'
-      },
-      body: JSON.stringify(claudeBody)
-    });
+    let currentMessages = baseMessages;
+    let data;
+    let iteration = 0;
 
-    const data = await response.json();
+    do {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: HEADERS,
+        body: JSON.stringify({ ...claudeBody, messages: currentMessages })
+      });
+      data = await response.json();
 
-    if (data.error) {
-      return res.status(500).json({ error: data.error.message });
-    }
+      if (data.error) {
+        return res.status(500).json({ error: data.error.message });
+      }
 
-    const text = data.content?.[0]?.text || '';
+      if (data.stop_reason === 'pause_turn') {
+        // Anthropic executed a server-side web search; append the assistant turn and re-call
+        currentMessages = [...currentMessages, { role: 'assistant', content: data.content }];
+        iteration++;
+      }
+    } while (data.stop_reason === 'pause_turn' && iteration < 5);
 
-    // Log cache stats in dev
+    // Collect text from all text blocks (may be multiple after a search)
+    const text = (data.content || [])
+      .filter(b => b.type === 'text')
+      .map(b => b.text)
+      .join('');
+
+    // Log cache + search stats in dev
     if (process.env.NODE_ENV !== 'production' && data.usage) {
       const u = data.usage;
-      console.log(`🔢 tokens — in:${u.input_tokens} | cache_write:${u.cache_creation_input_tokens||0} | cache_read:${u.cache_read_input_tokens||0} | out:${u.output_tokens}`);
+      const searched = iteration > 0 ? ` | web_searches:${iteration}` : '';
+      console.log(`🔢 tokens — in:${u.input_tokens} | cache_write:${u.cache_creation_input_tokens||0} | cache_read:${u.cache_read_input_tokens||0} | out:${u.output_tokens}${searched}`);
     }
 
     res.json({ text });
@@ -283,6 +307,28 @@ app.get('/api/kb-status', (req, res) => {
   res.json({
     loaded: knowledgeBase.length,
     docs: knowledgeBase.map(d => ({ name: d.name, chars: d.text.length }))
+  });
+});
+
+// ── REGULATION PDF LIST ──
+app.get('/api/regulation-pdfs', (req, res) => {
+  res.json(knowledgeBase.map(d => ({ name: d.name })));
+});
+
+// ── REGULATION PDF DOWNLOAD ──
+app.get('/api/regulation-pdfs/:name', (req, res) => {
+  const reqName = decodeURIComponent(req.params.name);
+  const doc = knowledgeBase.find(d => d.name === reqName);
+  if (!doc) return res.status(404).json({ error: 'לא נמצא' });
+
+  const pdfFiles = fs.readdirSync(__dirname).filter(f => f.toLowerCase().endsWith('.pdf'));
+  const file = pdfFiles.find(f =>
+    f.replace(/\.pdf$/i, '').replace(/[-_]/g, ' ').trim() === doc.name
+  );
+  if (!file) return res.status(404).json({ error: 'קובץ לא נמצא בשרת' });
+
+  res.download(path.join(__dirname, file), file, err => {
+    if (err && !res.headersSent) res.status(500).json({ error: 'שגיאה בהורדה' });
   });
 });
 

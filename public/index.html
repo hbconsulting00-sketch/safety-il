@@ -96,6 +96,8 @@ body { font-family: 'Rubik', sans-serif; font-weight: 400; font-optical-sizing: 
 #file-input { display: none; }
 .doc-del { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 16px; flex-shrink: 0; padding: 2px 4px; margin-right: auto; }
 .doc-del:hover { color: var(--red-light); }
+.doc-dl-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 15px; flex-shrink: 0; padding: 2px 4px; transition: color 0.15s; }
+.doc-dl-btn:hover { color: var(--gold-light); }
 
 /* MAIN */
 #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
@@ -448,6 +450,7 @@ let currentRole = 'עובד';
 let isLoading = false;
 let uploadedDocs = [];
 let conversation = [];
+let regulationFiles = []; // loaded from /api/regulation-pdfs
 
 const SYSTEM_PROMPT = `אתה SafetyIL — עוזר בטיחות תעסוקתית ישראלי מקצועי ומוסמך.
 
@@ -652,9 +655,71 @@ function renderUploadedDocs() {
   list.innerHTML = uploadedDocs.map((d, i) => `
     <div class="doc-item" style="background:rgba(26,122,74,0.1);border-color:rgba(39,174,96,0.2)">
       <span class="doc-icon">📄</span>
-      <span style="font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.name}</span>
+      <span style="font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${d.name}</span>
+      <button class="doc-dl-btn" onclick="downloadDoc(${i})" title="הורד טקסט מחולץ">📥</button>
       <button class="doc-del" onclick="removeDoc(${i})">✕</button>
     </div>`).join('');
+}
+
+function downloadDoc(i) {
+  const d = uploadedDocs[i];
+  if (!d || !d.content) { showToast('אין תוכן להורדה'); return; }
+  const blob = new Blob([d.content], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = d.name.replace(/\.[^.]+$/, '') + '_extracted.txt';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ── REGULATION PDF DOWNLOADS ──
+async function loadRegulationList() {
+  try {
+    const r = await fetch(`${API_BASE}/api/regulation-pdfs`);
+    if (!r.ok) return;
+    regulationFiles = await r.json();
+    renderRegulationSidebar();
+  } catch(e) {}
+}
+
+function getRegulationIcon(name) {
+  const n = name.toLowerCase();
+  if (n.includes('פקודת') || n.includes('עיקר')) return '📜';
+  if (n.includes('גובה')) return '🔧';
+  if (n.includes('בניה') || n.includes('בנייה')) return '🏗️';
+  if (n.includes('hazardous') || n.includes('מסוכן')) return '⚗️';
+  if (n.includes('חשמל')) return '⚡';
+  if (n.includes('ציוד מגן') || n.includes('מגן אישי')) return '🦺';
+  if (n.includes('ממונ')) return '🛡️';
+  if (n.includes('עגורן') || n.includes('הרמה')) return '🚧';
+  if (n.includes('כבא') || n.includes('כיבוי')) return '🧯';
+  if (n.includes('ניטור') || n.includes('ביולוג')) return '🔬';
+  return '📄';
+}
+
+function renderRegulationSidebar() {
+  if (!regulationFiles.length) return;
+  const list = document.getElementById('docs-list');
+  list.innerHTML = '<div class="sidebar-section">חקיקה ורגולציה — לחץ 📥 להורדה</div>' +
+    regulationFiles.map(doc => `
+      <div class="doc-item active">
+        <span class="doc-icon">${getRegulationIcon(doc.name)}</span>
+        <span style="flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${doc.name}">${doc.name}</span>
+        <button class="doc-dl-btn" onclick="downloadRegulation('${escJsStr(doc.name)}')" title="הורד PDF">📥</button>
+      </div>`).join('');
+}
+
+function escJsStr(s) {
+  return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+}
+
+function downloadRegulation(name) {
+  const url = `${API_BASE}/api/regulation-pdfs/${encodeURIComponent(name)}`;
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name + '.pdf';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 
 function removeDoc(i) { uploadedDocs.splice(i, 1); renderUploadedDocs(); }
@@ -1131,8 +1196,12 @@ function showToast(msg) {
   setTimeout(() => t.remove(), 2400);
 }
 
-// ── RESTORE FROM SHARE URL ──
+// ── RESTORE FROM SHARE URL + LOAD REGULATIONS ──
 window.addEventListener('DOMContentLoaded', () => {
+  // Load regulation PDFs list for sidebar downloads
+  loadRegulationList();
+
+  // Restore shared conversation from URL
   const params = new URLSearchParams(window.location.search);
   const shared = params.get('s');
   if (shared && typeof LZString !== 'undefined') {
