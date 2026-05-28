@@ -67,10 +67,10 @@ async function loadRegulationPDFs() {
     try {
       const buffer = fs.readFileSync(path.join(__dirname, file));
       const result = await pdfParse(buffer);
-      const text = cleanPdfText(result.text).substring(0, 18000);
+      // 8000 chars per doc (~4,800 tokens) keeps 3 selected docs under 30K TPM
+      const text = cleanPdfText(result.text).substring(0, 8000);
 
       if (text.trim().length > 100) {
-        // Derive a clean display name from the filename
         const name = file
           .replace(/\.pdf$/i, '')
           .replace(/[-_]/g, ' ')
@@ -89,13 +89,71 @@ async function loadRegulationPDFs() {
   console.log(`\n✅  Knowledge base ready: ${knowledgeBase.length}/${pdfFiles.length} regulations (${Math.round(totalChars/1000)}K chars)\n`);
 }
 
-// Build the knowledge base block appended to every system prompt
-function buildKnowledgeBlock() {
-  if (!knowledgeBase.length) return '';
-  const docs = knowledgeBase
-    .map(d => `### ${d.name}\n\n${d.text}`)
-    .join('\n\n---\n\n');
-  return `\n\n## ===== בסיס ידע — נוסח התקנות הרשמי (טקסט מלא) =====\n\nהתשובות שלך חייבות להישען על הטקסטים הבאים בלבד. אם המידע אינו מופיע להלן — אמור זאת במפורש.\n\n${docs}`;
+// ── SMART DOCUMENT SELECTION ──
+// Maps Hebrew keywords to partial doc name matches.
+// Each request selects only the 2-3 most relevant docs (~15K tokens total).
+const TOPIC_KEYWORDS = [
+  { keywords: ['גובה','נפילה','פיגום','סולם','חגורת','גג','מרפסת','ארובה','עמוד'], topic: 'גובה' },
+  { keywords: ['בניה','בנייה','אתר בנ','חפירה','שרטוט','דיפון','מנהור','שלד'], topic: 'בניה' },
+  { keywords: ['חומר מסוכן','חומרים מסוכנ','כימי','רעיל','נפץ','חומצה','מסוכן','סולן','בנזן'], topic: 'hazardous' },
+  { keywords: ['חשמל','מתח','חשמלי','כבל','לוח חשמל','שנאי','מפסק','גנרטור'], topic: 'חשמל' },
+  { keywords: ['ציוד מגן','קסדה','כפפות','נשמת','אוזניות','מגפיים','מגן פנים','אפוד'], topic: 'ציוד מגן' },
+  { keywords: ['ממונה','פיקוח על','ביקורת בטיחות','מינוי ממונה'], topic: 'ממונים' },
+  { keywords: ['עגורן','מלגזה','הרמה','מנוף','אתת','קרסים','ווים','טרקטור'], topic: 'עגורנאים' },
+  { keywords: ['כיבוי','אש','שריפה','מטף','ספרינקלר','מוקד','פינוי'], topic: 'כבאות' },
+  { keywords: ['ניטור','סביבתי','ביולוגי','גורמים מזיק','אבק','רעש','קרינה','גזים'], topic: 'ניטור' },
+];
+
+// The base law is always included as anchor
+const BASE_DOC_KEYWORDS = ['פקודת', 'פקודה'];
+
+function selectRelevantDocs(userMessages) {
+  if (!knowledgeBase.length) return [];
+
+  // Combine last 3 messages for context
+  const text = userMessages.slice(-3)
+    .filter(m => m.role === 'user')
+    .map(m => (typeof m.content === 'string' ? m.content : ''))
+    .join(' ')
+    .toLowerCase();
+
+  // Score each doc
+  const scores = knowledgeBase.map(doc => {
+    let score = 0;
+    const docName = doc.name.toLowerCase();
+
+    // Check if it's the base law (always gets a boost)
+    if (BASE_DOC_KEYWORDS.some(k => docName.includes(k.toLowerCase()))) {
+      score += 0.5; // slight boost, not forced to #1
+    }
+
+    for (const { keywords, topic } of TOPIC_KEYWORDS) {
+      for (const kw of keywords) {
+        if (text.includes(kw)) {
+          // Check if this topic matches the doc
+          if (docName.includes(topic.toLowerCase()) ||
+              doc.text.substring(0, 200).toLowerCase().includes(topic.toLowerCase())) {
+            score += 1;
+          }
+        }
+      }
+    }
+    return { doc, score };
+  });
+
+  scores.sort((a, b) => b.score - a.score);
+
+  // Return top 3 docs. If nothing matched (all score 0), return first 3 (includes base law)
+  return scores.slice(0, 3).map(s => s.doc);
+}
+
+// Build knowledge block from a specific subset of docs
+function buildKnowledgeBlock(docs) {
+  const list = docs || knowledgeBase;
+  if (!list.length) return '';
+  const body = list.map(d => `### ${d.name}\n\n${d.text}`).join('\n\n---\n\n');
+  const names = list.map(d => d.name).join(', ');
+  return `\n\n## ===== בסיס ידע — נוסח התקנות הרשמי (טקסט מלא) =====\n\nמסמכים נבחרים לשאלה זו: ${names}\n\nהתשובות שלך חייבות להישען על הטקסטים הבאים בלבד. אם המידע אינו מופיע להלן — אמור זאת במפורש.\n\n${body}`;
 }
 
 // ── PROXY TO CLAUDE ──
@@ -111,7 +169,13 @@ app.post('/api/chat', async (req, res) => {
     return res.status(400).json({ error: 'messages array is empty' });
   }
 
-  const fullSystemText = system + buildKnowledgeBlock();
+  // Select only the most relevant PDFs for this question (keeps tokens under 30K TPM)
+  const selectedDocs = selectRelevantDocs(messages);
+  const fullSystemText = system + buildKnowledgeBlock(selectedDocs);
+
+  if (process.env.NODE_ENV !== 'production' && selectedDocs.length) {
+    console.log(`📂 Selected docs: ${selectedDocs.map(d => d.name).join(' | ')}`);
+  }
 
   // Use array format for system to enable Anthropic prompt caching.
   // The knowledge base text is large and static — caching saves ~90% on cost.
