@@ -26,6 +26,12 @@ const upload = multer({
 
 if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
 
+// Load optional libraries gracefully
+let pdfParse = null;
+let mammoth = null;
+try { pdfParse = require('pdf-parse'); } catch(e) { console.log('pdf-parse not installed — PDF files will be skipped'); }
+try { mammoth = require('mammoth'); } catch(e) { console.log('mammoth not installed — DOCX files will be skipped'); }
+
 // ── PROXY TO CLAUDE ──
 app.post('/api/chat', async (req, res) => {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -40,7 +46,7 @@ app.post('/api/chat', async (req, res) => {
   }
 
   const claudeBody = {
-    model: 'claude-haiku-4-5-20251001',
+    model: 'claude-sonnet-4-6',
     max_tokens,
     ...(system && { system }),
     messages: messages.map(m => ({ role: m.role, content: m.content }))
@@ -72,25 +78,61 @@ app.post('/api/chat', async (req, res) => {
 });
 
 // ── FILE UPLOAD ──
-app.post('/api/upload', upload.array('files', 10), (req, res) => {
+app.post('/api/upload', upload.array('files', 10), async (req, res) => {
   if (!req.files || req.files.length === 0) {
     return res.status(400).json({ error: 'לא נמצאו קבצים' });
   }
-  const uploaded = req.files.map(f => {
+
+  const MAX_CHARS = 20000; // per file
+
+  const uploaded = await Promise.all(req.files.map(async f => {
     let content = '';
+    const ext = path.extname(f.originalname).toLowerCase();
     try {
-      if (f.mimetype === 'text/plain' || f.originalname.endsWith('.txt')) {
-        content = fs.readFileSync(f.path, 'utf8').substring(0, 12000);
+      if (ext === '.txt' || f.mimetype === 'text/plain') {
+        content = fs.readFileSync(f.path, 'utf8').substring(0, MAX_CHARS);
+
+      } else if (ext === '.pdf') {
+        if (pdfParse) {
+          const buffer = fs.readFileSync(f.path);
+          const result = await pdfParse(buffer);
+          content = result.text.substring(0, MAX_CHARS);
+          if (!content.trim()) content = `[PDF: ${f.originalname} — לא ניתן לחלץ טקסט (PDF סרוק?)]`;
+        } else {
+          content = `[PDF: ${f.originalname} — יש להתקין pdf-parse: npm install pdf-parse]`;
+        }
+
+      } else if (ext === '.docx') {
+        if (mammoth) {
+          const buffer = fs.readFileSync(f.path);
+          const result = await mammoth.extractRawText({ buffer });
+          content = result.value.substring(0, MAX_CHARS);
+        } else {
+          content = `[DOCX: ${f.originalname} — יש להתקין mammoth: npm install mammoth]`;
+        }
+
+      } else if (ext === '.doc') {
+        content = `[DOC: ${f.originalname} — פורמט .doc ישן אינו נתמך. שמור כ-DOCX או TXT]`;
+
       } else {
-        content = `[קובץ: ${f.originalname} — ${Math.round(f.size/1024)}KB — לעיבוד נוסף יש להוסיף ספריית PDF/Word]`;
+        content = `[${f.originalname} — פורמט לא נתמך]`;
       }
-    } catch(e) { content = `[שגיאה בקריאת הקובץ: ${e.message}]`; }
+    } catch(e) {
+      content = `[שגיאה בקריאת ${f.originalname}: ${e.message}]`;
+    }
+
+    // Cleanup temp file
+    try { fs.unlinkSync(f.path); } catch(e) {}
+
     return { name: f.originalname, content, size: f.size };
-  });
+  }));
+
   res.json({ files: uploaded });
 });
 
 app.listen(PORT, () => {
   console.log(`\n✅ SafetyIL פועל על http://localhost:${PORT}`);
   console.log(`📋 פתח את הדפדפן ועבור ל: http://localhost:${PORT}\n`);
+  if (!pdfParse) console.log('💡 להפעלת PDF: npm install pdf-parse');
+  if (!mammoth) console.log('💡 להפעלת DOCX: npm install mammoth');
 });
