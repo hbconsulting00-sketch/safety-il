@@ -99,6 +99,15 @@ body { font-family: 'Rubik', sans-serif; font-weight: 400; font-optical-sizing: 
 .doc-dl-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 15px; flex-shrink: 0; padding: 2px 4px; transition: color 0.15s; }
 .doc-dl-btn:hover { color: var(--gold-light); }
 
+/* Interactive checklist (תופס) */
+.cl-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; margin: 4px 0; border-radius: 8px; cursor: pointer; transition: background 0.15s; border: 1px solid var(--border); user-select: none; }
+.cl-item:hover { background: rgba(100,20,20,0.04); border-color: var(--border-strong); }
+.cl-item[data-state="1"] { background: rgba(34,197,94,0.08); border-color: rgba(34,197,94,0.3); }
+.cl-item[data-state="2"] { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.3); }
+.cl-box { font-size: 20px; flex-shrink: 0; min-width: 24px; text-align: center; line-height: 1.4; }
+.cl-text { font-size: 15px; line-height: 1.5; padding-top: 2px; }
+.cl-section { font-size: 13px; font-weight: 600; color: var(--gold-light); padding: 12px 4px 4px; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+
 /* MAIN */
 #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 #messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
@@ -420,9 +429,9 @@ body { font-family: 'Rubik', sans-serif; font-weight: 400; font-optical-sizing: 
     <div class="modal-head">
       <span class="modal-title">📋 רשימת תיוג — <span id="checklist-role-label"></span></span>
       <div class="modal-actions">
-        <button class="modal-btn" onclick="printChecklist()">📄 PDF</button>
-        <button class="modal-btn" onclick="wordChecklist()">📝 Word</button>
-        <button class="modal-btn" onclick="whatsappChecklist()" style="background:rgba(22,163,74,0.10);border-color:rgba(22,163,74,0.4);color:#16a34a">💬 WhatsApp</button>
+        <button class="modal-btn" onclick="whatsappChecklist()" style="background:rgba(22,163,74,0.10);border-color:rgba(22,163,74,0.4);color:#16a34a">📤 WhatsApp</button>
+        <button class="modal-btn" onclick="printChecklist()">🖨️ הדפס מלא</button>
+        <button class="modal-btn" onclick="printBlankChecklist()">📄 הורד ריק</button>
         <button class="modal-close" onclick="closeChecklistModal()">✕</button>
       </div>
     </div>
@@ -451,6 +460,7 @@ let isLoading = false;
 let uploadedDocs = [];
 let conversation = [];
 let regulationFiles = []; // loaded from /api/regulation-pdfs
+let currentChecklistData = null; // { title, sections, allItems } for the open interactive checklist
 
 const SYSTEM_PROMPT = `אתה SafetyIL — עוזר בטיחות תעסוקתית ישראלי מקצועי ומוסמך.
 
@@ -813,6 +823,82 @@ function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
 }
 
+// ── INTERACTIVE CHECKLIST HELPERS ──
+
+function parseChecklistStructure(html) {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  const h2El = div.querySelector('h2');
+  const title = h2El ? h2El.textContent.trim() : 'רשימת תיוג';
+  const sections = [];
+  let currentSection = null;
+  div.querySelectorAll('h3, h4, li').forEach(el => {
+    if (el.nodeName === 'H3' || el.nodeName === 'H4') {
+      currentSection = { title: el.textContent.trim(), items: [] };
+      sections.push(currentSection);
+    } else if (el.nodeName === 'LI') {
+      const text = el.textContent.replace(/^[\s✅☐❌✓✗•\-*]+/, '').trim();
+      if (text.length > 2) {
+        if (!currentSection) { currentSection = { title: '', items: [] }; sections.push(currentSection); }
+        currentSection.items.push(text);
+      }
+    }
+  });
+  // fallback: split plain text lines
+  if (!sections.flatMap(s => s.items).length) {
+    const lines = div.textContent.split('\n');
+    lines.forEach(line => {
+      const text = line.replace(/^[\s✅☐❌✓✗•\-*]+/, '').trim();
+      if (text.length > 3) {
+        if (!currentSection) { currentSection = { title: '', items: [] }; sections.push(currentSection); }
+        currentSection.items.push(text);
+      }
+    });
+  }
+  return { title, sections, allItems: sections.flatMap(s => s.items) };
+}
+
+function buildInteractiveChecklistHtml(structure, infoLine) {
+  const { sections } = structure;
+  const hint = infoLine || 'לחץ/י על פריט לסימון: ☐ → ✅ → ❌';
+  let html = `<div style="margin-bottom:10px;padding:7px 14px;background:rgba(100,20,20,0.04);border-radius:8px;font-size:13px;color:var(--text-muted);text-align:center">${hint}</div>`;
+  sections.forEach(sec => {
+    if (sec.title) html += `<div class="cl-section">${escHtml(sec.title)}</div>`;
+    sec.items.forEach(item => {
+      html += `<div class="cl-item" data-state="0" onclick="cycleCheckState(this)"><span class="cl-box">☐</span><span class="cl-text">${escHtml(item)}</span></div>`;
+    });
+  });
+  if (!sections.flatMap(s => s.items).length) {
+    html += '<p style="color:#e67e22;padding:20px">לא נמצאו פריטים — נסה שוב.</p>';
+  }
+  return html;
+}
+
+function buildChecklistUrl(title, items) {
+  const data = { title, role: currentRole, date: new Date().toLocaleDateString('he-IL'), items };
+  const compressed = LZString.compressToEncodedURIComponent(JSON.stringify(data));
+  return `${window.location.origin}${window.location.pathname}?cl=${compressed}`;
+}
+
+function cycleCheckState(el) {
+  const s = (parseInt(el.dataset.state || '0') + 1) % 3;
+  el.dataset.state = s;
+  el.querySelector('.cl-box').textContent = ['☐','✅','❌'][s];
+}
+
+function openChecklistFromUrl(data) {
+  if (!data || !data.items?.length) return;
+  currentChecklistData = { title: data.title || 'רשימת תיוג', sections: [{ title: '', items: data.items }], allItems: data.items };
+  if (data.role) {
+    currentRole = data.role;
+    document.querySelectorAll('.role-btn').forEach(b => b.classList.toggle('active', b.getAttribute('onclick')?.includes(`'${currentRole}'`)));
+  }
+  const infoLine = `${data.role ? escHtml(data.role) + ' | ' : ''}${data.date || ''} &nbsp;·&nbsp; לחץ/י על פריט לסימון`;
+  document.getElementById('checklist-role-label').textContent = data.title || 'רשימת תיוג';
+  document.getElementById('checklist-content').innerHTML = buildInteractiveChecklistHtml({ sections: currentChecklistData.sections }, infoLine);
+  document.getElementById('checklist-modal').style.display = 'flex';
+}
+
 async function sendMessage() {
   if (isLoading) return;
   const input = document.getElementById('text-input');
@@ -961,6 +1047,7 @@ const CHECKLIST_PROMPTS = {
 
 async function generateChecklist() {
   if (!conversation.length) { showToast('אנא שאל שאלה תחילה'); return; }
+  currentChecklistData = null;
   document.getElementById('checklist-role-label').textContent = currentRole;
   document.getElementById('checklist-modal').style.display = 'flex';
   document.getElementById('checklist-content').innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;padding:40px;gap:12px"><div class="typing-dots"><span></span><span></span><span></span></div><div style="color:var(--text-muted);font-size:13px">מייצר רשימת תיוג...</div></div>`;
@@ -982,13 +1069,17 @@ async function generateChecklist() {
       })
     });
     const data = await resp.json();
+    if (data.error) {
+      document.getElementById('checklist-content').innerHTML = `<p style="color:#e67e22;padding:20px">שגיאת API: ${escHtml(data.error)}</p>`;
+      return;
+    }
     const html = sanitizeHtml(data.text || '');
-    document.getElementById('checklist-content').innerHTML = html || '<p style="color:#e67e22">לא התקבל תוכן — נסה שוב.</p>';
-    // Update modal title from the h2 the model generated
-    const h2 = document.querySelector('#checklist-content h2');
-    if (h2) document.getElementById('checklist-role-label').textContent = h2.innerText.trim();
+    const structure = parseChecklistStructure(html);
+    currentChecklistData = { title: structure.title, sections: structure.sections, allItems: structure.allItems };
+    document.getElementById('checklist-role-label').textContent = structure.title || currentRole;
+    document.getElementById('checklist-content').innerHTML = buildInteractiveChecklistHtml(structure);
   } catch(e) {
-    document.getElementById('checklist-content').innerHTML = '<p style="color:#e67e22">שגיאת חיבור — נסה שוב.</p>';
+    document.getElementById('checklist-content').innerHTML = '<p style="color:#e67e22;padding:20px">שגיאת חיבור — נסה שוב.</p>';
   }
 }
 
@@ -997,49 +1088,55 @@ function closeChecklistModal() {
 }
 
 function printChecklist() {
-  const content = document.getElementById('checklist-content').innerHTML;
-  if (!content || content.includes('typing-dots')) { showToast('המתן לסיום יצירת הרשימה'); return; }
-  // Use iframe to avoid popup blocker
+  const els = document.querySelectorAll('#checklist-content .cl-section, #checklist-content .cl-item');
+  if (!els.length) { showToast('המתן לסיום יצירת הרשימה'); return; }
+  _printChecklistHtml(currentChecklistData?.title || 'רשימת תיוג', _buildChecklistRows(els, false));
+}
+
+function printBlankChecklist() {
+  const els = document.querySelectorAll('#checklist-content .cl-section, #checklist-content .cl-item');
+  if (!els.length) { showToast('אין רשימה להורדה'); return; }
+  _printChecklistHtml(currentChecklistData?.title || 'רשימת תיוג', _buildChecklistRows(els, true));
+}
+
+function _buildChecklistRows(els, blank) {
+  let html = '';
+  els.forEach(el => {
+    if (el.classList.contains('cl-section')) {
+      html += `<div style="font-size:12px;font-weight:700;color:#7a1c1c;padding:14px 4px 4px;text-transform:uppercase;letter-spacing:0.04em;border-bottom:1px solid #ddd;margin-bottom:4px">${escHtml(el.textContent)}</div>`;
+    } else {
+      const state = blank ? 0 : parseInt(el.dataset.state || '0');
+      const symbol = ['☐','✅','❌'][state];
+      const text = el.querySelector('.cl-text')?.textContent?.trim() || '';
+      const bg = !blank && state === 1 ? '#f0fff4' : !blank && state === 2 ? '#fff0f0' : 'transparent';
+      html += `<div style="display:flex;gap:12px;align-items:flex-start;padding:7px 4px;border-bottom:1px solid #eee;background:${bg}">
+        <span style="font-size:18px;flex-shrink:0;min-width:22px;text-align:center">${symbol}</span>
+        <span style="font-size:14px;line-height:1.6">${escHtml(text)}</span>
+      </div>`;
+    }
+  });
+  return html;
+}
+
+function _printChecklistHtml(title, rows) {
   const iframe = document.createElement('iframe');
   iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:800px;height:600px';
   document.body.appendChild(iframe);
   iframe.contentDocument.write(`<!DOCTYPE html><html dir="rtl" lang="he"><head><meta charset="UTF-8">
 <style>body{font-family:Arial,sans-serif;direction:rtl;padding:24px;color:#222;max-width:780px;margin:0 auto}
-h1{color:#0d1f3c;border-bottom:2px solid #c9a84c;padding-bottom:8px;font-size:18px;margin-bottom:6px}
-h3{color:#162e55;font-size:15px;margin-top:18px;margin-bottom:4px}
-h4{color:#333;font-size:13px;margin-top:12px}
-ul{padding-right:20px;line-height:2.1} li{margin-bottom:2px}
+h1{color:#7a1c1c;border-bottom:2px solid rgba(100,20,20,0.25);padding-bottom:8px;font-size:18px;margin-bottom:6px}
 .meta{color:#666;font-size:12px;margin-bottom:18px}
 *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-span[style*="#1a7a4a"]{background:#1a7a4a!important;color:white!important;padding:1px 6px;border-radius:3px;font-size:11px}
-span[style*="#c0392b"]{background:#c0392b!important;color:white!important;padding:1px 6px;border-radius:3px;font-size:11px}
 </style></head><body>
-<h1>🛡️ SafetyIL — רשימת תיוג</h1>
-<div class="meta">תפקיד: ${currentRole} | תאריך: ${new Date().toLocaleDateString('he-IL')}</div>
-${content}</body></html>`);
+<h1>🛡️ ${escHtml(title)}</h1>
+<div class="meta">תפקיד: ${escHtml(currentRole)} | תאריך: ${new Date().toLocaleDateString('he-IL')}</div>
+${rows}</body></html>`);
   iframe.contentDocument.close();
   setTimeout(() => {
     iframe.contentWindow.focus();
     iframe.contentWindow.print();
-    setTimeout(() => document.body.removeChild(iframe), 1000);
+    setTimeout(() => { try { document.body.removeChild(iframe); } catch(e) {} }, 1500);
   }, 300);
-}
-
-function wordChecklist() {
-  const content = document.getElementById('checklist-content').innerHTML;
-  const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'>
-<head><meta charset='utf-8'><style>body{font-family:Arial,sans-serif;direction:rtl;font-size:13px;line-height:1.8;color:#222;padding:20px}
-h3{color:#162e55;margin-top:16px} ul{padding-right:20px;line-height:2}</style></head>
-<body><h1 style="color:#0d1f3c;border-bottom:2px solid #c9a84c;padding-bottom:8px">🛡️ SafetyIL — רשימת תיוג</h1>
-<p style="color:#666;font-size:12px">תפקיד: ${currentRole} | תאריך: ${new Date().toLocaleDateString('he-IL')}</p>
-${content}</body></html>`;
-  const blob = new Blob(['﻿', html], { type: 'application/msword' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `SafetyIL_רשימת_תיוג_${currentRole}_${new Date().toLocaleDateString('he-IL').replace(/\//g,'-')}.doc`;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  URL.revokeObjectURL(url);
 }
 
 // ── SAVE / HISTORY (localStorage) ──
@@ -1131,42 +1228,11 @@ function deleteHistoryItem(index) {
   renderSidebarHistory();
 }
 
-// ── WHATSAPP CHECKLIST ──
+// ── WHATSAPP CHECKLIST — sends interactive link ──
 function whatsappChecklist() {
-  const content = document.getElementById('checklist-content');
-  if (!content || !content.innerHTML.trim()) { showToast('אין רשימה לשליחה'); return; }
-
-  function cleanText(el) {
-    return (el.innerText || '')
-      .replace(/[\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}]|[\u{FE00}-\u{FEFF}]|[\u{1F300}-\u{1FAFF}]/gu, '')
-      .replace(/\s+/g, ' ').trim();
-  }
-
-  // Use the specific topic title from h2 if present
-  const h2 = content.querySelector('h2');
-  const title = h2 ? cleanText(h2) : `רשימת תיוג בטיחות - ${currentRole}`;
-
-  const lines = [];
-  lines.push(`*${title}*`);
-  lines.push('');
-
-  content.querySelectorAll('h3, h4, li').forEach(el => {
-    const text = cleanText(el);
-    if (!text) return;
-    if (el.tagName === 'H3') {
-      lines.push('');
-      lines.push(`*${text}*`);
-    } else if (el.tagName === 'H4') {
-      lines.push(`_${text}_`);
-    } else if (el.tagName === 'LI') {
-      lines.push(`- ${text}`);
-    }
-  });
-
-  lines.push('');
-  lines.push('_SafetyIL - עוזר בטיחות תעסוקתית_');
-
-  const msg = lines.join('\n').replace(/—/g, '-');
+  if (!currentChecklistData || !currentChecklistData.allItems.length) { showToast('אין רשימה לשליחה'); return; }
+  const url = buildChecklistUrl(currentChecklistData.title, currentChecklistData.allItems);
+  const msg = `*${currentChecklistData.title}*\n\nלפתיחת רשימת תיוג אינטראקטיבית:\n${url}`;
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
@@ -1198,11 +1264,23 @@ function showToast(msg) {
 
 // ── RESTORE FROM SHARE URL + LOAD REGULATIONS ──
 window.addEventListener('DOMContentLoaded', () => {
-  // Load regulation PDFs list for sidebar downloads
   loadRegulationList();
 
-  // Restore shared conversation from URL
   const params = new URLSearchParams(window.location.search);
+
+  // Restore interactive checklist from ?cl= URL
+  const cl = params.get('cl');
+  if (cl && typeof LZString !== 'undefined') {
+    try {
+      const data = JSON.parse(LZString.decompressFromEncodedURIComponent(cl));
+      if (data.items?.length) {
+        window.history.replaceState({}, '', window.location.pathname);
+        setTimeout(() => openChecklistFromUrl(data), 100);
+      }
+    } catch(e) { /* silent fail */ }
+  }
+
+  // Restore shared conversation from ?s= URL
   const shared = params.get('s');
   if (shared && typeof LZString !== 'undefined') {
     try {
