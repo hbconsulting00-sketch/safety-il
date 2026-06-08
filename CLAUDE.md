@@ -14,83 +14,76 @@ Requires a `.env` file with:
 ANTHROPIC_API_KEY=sk-ant-...
 ```
 
+PDF regulations are loaded automatically from any `.pdf` files placed in the project root. Requires `npm install pdf-parse mammoth` for parsing.
+
 ## Architecture
 
-This is a **single-file frontend + thin Node proxy** app. Almost all logic lives in `public/index.html`.
+**Single-file frontend + thin Node proxy.** All UI logic lives in `public/index.html`. The server is a stateless Express proxy — it holds the regulation knowledge base in memory but persists nothing to disk.
 
-- **`server.js`** — Express server with two routes:
-  - `POST /api/chat` — proxies to Anthropic Claude API (`claude-haiku-4-5-20251001`). Receives `{ messages, system, max_tokens }`, returns `{ text }`.
-  - `POST /api/upload` — multer file upload, reads `.txt` files into text, stubs others.
-  - Serves `public/` as static files.
+### server.js
 
-- **`public/index.html`** — everything else: CSS, HTML, and all JS in one `<script>` block. RTL Hebrew UI. Font: Rubik (replaces Heebo) + Frank Ruhl Libre for logo/headers.
+- `POST /api/chat` — proxies to Anthropic `claude-sonnet-4-6`. Uses **prompt caching** (`anthropic-beta: prompt-caching-2024-07-31`) on the system block. Runs a **web search loop**: if `stop_reason === 'pause_turn'`, appends the assistant turn and re-calls (up to 5 iterations). The `web_search_20250305` tool is always included.
+- `POST /api/upload` — multer upload; parses `.pdf` (pdf-parse), `.docx` (mammoth), `.txt`. Returns extracted text.
+- `GET /api/regulation-pdfs` — lists loaded knowledge base docs `[{ name }]`.
+- `GET /api/regulation-pdfs/:name` — serves the original PDF file for download.
+- `GET /api/kb-status` — debug endpoint showing loaded docs and char counts.
 
-## Frontend structure (index.html)
+**Knowledge base** (`knowledgeBase[]`): up to 10 regulation PDFs loaded at startup, capped at 8,000 chars each. `selectRelevantDocs(messages)` scores each doc by keyword match against the last 3 user messages and returns the top 3 — keeping requests under ~20K tokens to stay within the 30K TPM rate limit.
 
-**Layout order (top → bottom):**
+### public/index.html
+
+Everything else: CSS, HTML, all JS in one `<script>` block. RTL Hebrew UI. Fonts: Rubik + Frank Ruhl Libre.
+
+**Layout:**
 ```
 #header → #role-bar → #toolbar → #error-banner → #layout(#sidebar | #main)
 ```
-`#main` contains: `#messages` → `#quick-row` → `#input-bar` → `#disclaimer`
 
 **Sidebar tabs** (`switchSidebarTab(tab, btn)`):
-- `law` — static list of Israeli safety legislation (decorative, not a real doc store)
-- `company` — uploaded company procedures (`#uploaded-docs-list`) + upload zone
-- `history` — saved conversations rendered by `renderSidebarHistory()`
-
-**Toolbar button groups** (logical order, RTL):
-1. Conversation management: `✏️ שיחה חדשה` | `💾 שמור`
-2. Export tools: `📋 רשימת תיוג` | `📄 PDF` | `📝 Word`
-3. Share: `🔗 שתף`
+- `law` — dynamically populated from `/api/regulation-pdfs` via `renderRegulationSidebar()`. Each item has a 📥 download button.
+- `company` — uploaded company procedures (`renderUploadedDocs()`), each with 📥 extract download + ✕ remove.
+- `history` — saved conversations (`renderSidebarHistory()`), localStorage key `safetyil_history`.
+- `checklists` — saved checklists (`renderSavedChecklists()`), localStorage key `safetyil_checklists`.
 
 **Key globals:**
-- `currentRole` — one of: `עובד`, `מנהל עבודה`, `ממונה בטיחות`, `קבלן`
-- `conversation` — array of `{role, content}` sent to the API
-- `uploadedDocs` — array of uploaded file objects appended to user messages
+- `currentRole` — `עובד` | `מנהל עבודה` | `ממונה בטיחות` | `קבלן`
+- `conversation` — `{role, content}[]` sent to the API (last 8 messages)
+- `uploadedDocs` — uploaded file objects appended to system prompt
+- `regulationFiles` — list from `/api/regulation-pdfs`, populated on load
+- `currentChecklistData` — `{ title, sections, allItems }` for the currently open interactive checklist
 
 **Prompt system:**
-- `SYSTEM_PROMPT` — closed-system base prompt with strict guardrails:
-  - Always respond in Hebrew only
-  - Refuse off-topic questions with a fixed message
-  - Answer only from the explicit list of Israeli safety regulations
-  - Never invent section numbers — if uncertain, write "יש לבדוק בנוסח הרשמי"
-  - Fixed fallback when regulation not found: "לא מצאתי הוראה ספציפית..."
-  - Enforces HTML-only output with specific inline-style tags
-- `ROLE_PROMPTS[currentRole]` — appended to `SYSTEM_PROMPT` per role. Each role gets a dramatically different response format:
-  - `עובד` (worker): simple bullets, no citations, plain language
-  - `מנהל עבודה` (manager): 3-section structured response
-  - `ממונה בטיחות` (safety officer): full legal citations, section numbers
-  - `קבלן` (contractor): focus on insurance, licenses, liability
-- `CHECKLIST_SYSTEM` — requires the model to open with `<h2>` containing a **topic-specific** title (e.g. "רשימת תיוג לעבודה עם כלי ריתוך בחלל מוקף"), not a generic one.
-- `CHECKLIST_PROMPTS[currentRole]` — role-specific checklist structure, used in `generateChecklist()`.
+- `SYSTEM_PROMPT` — closed-system: Hebrew-only, refuse off-topic, answer only from the regulation knowledge base, never invent section numbers, HTML-only output with specific inline-style tags.
+- `ROLE_PROMPTS[currentRole]` — dramatically different format per role (worker: plain bullets; manager: 3-section; safety officer: full citations; contractor: insurance/liability focus).
+- `CHECKLIST_SYSTEM` — requires `<h2>` as first element with a topic-specific title; structured `<h3>` + `<ul><li>` output.
+- `CHECKLIST_PROMPTS[currentRole]` — role-specific checklist structure.
 
-**Key functions:**
-- `sendMessage()` — builds the messages array, calls `/api/chat`, renders HTML response into `.bubble.bot`
-- `generateChecklist()` — calls `/api/chat` with checklist prompts, renders in modal, extracts `<h2>` to update modal title
-- `whatsappChecklist()` — extracts plain text from checklist modal, strips emoji, opens `wa.me/?text=`
-- `exportPDF()` — sets `#print-role`, `#print-date`, calls `window.print()`
-- `exportWord()` — builds an Office-namespaced HTML blob, triggers download as `.doc`
-- `newConversation()` — resets `conversation`, `uploadedDocs`, restores welcome screen
-- `saveConversation()` — saves to `localStorage['safetyil_history']` (max 30 entries)
-- `renderSidebarHistory()` / `restoreConversation(index)` — history lives in sidebar "שיחות" tab, not a modal
-- `switchSidebarTab(tab, btn)` — switches sidebar panels, calls `renderSidebarHistory()` when tab is `history`
-- `shareLink()` — compresses conversation with lz-string (CDN), encodes in `?s=` URL param
-- On DOMContentLoaded: checks `?s=` param and restores a shared conversation
+**Interactive checklist flow:**
+1. `generateChecklist()` calls the API → gets HTML with `<h3>` sections + `<li>` items.
+2. `parseChecklistStructure(html)` extracts `{ title, sections[], allItems[] }` from the HTML (uses DOM parsing, not regex).
+3. `buildInteractiveChecklistHtml(structure)` renders `.cl-item` divs with `data-state="0"` and `onclick="cycleCheckState(this)"`.
+4. States: 0=☐, 1=✅, 2=❌, cycling on click.
+5. `saveChecklist()` — saves title + items + states to `safetyil_checklists` localStorage (max 50).
+6. `whatsappChecklist()` — encodes items as `?cl=<lz-string-JSON>` URL and sends the link via `wa.me`.
+7. `openChecklistFromUrl(data)` — called on `DOMContentLoaded` when `?cl=` param is present; opens the modal with restored items.
+8. `printChecklist()` / `printBlankChecklist()` — build an iframe with current states / all-☐ and trigger `print()`.
 
-**`API_BASE`** is set dynamically: `''` in production (same-origin), `http://localhost:3000` when on localhost.
+**URL params (both handled in DOMContentLoaded):**
+- `?s=` — shared conversation (lz-string compressed JSON with `conversation` + `messagesHtml`)
+- `?cl=` — shared interactive checklist (lz-string compressed JSON with `title`, `role`, `date`, `items[]`)
 
 ## Deployment
 
-Deployed on Render (auto-deploys from GitHub `main` branch push).
+Render, auto-deploys from GitHub `main` push.
 Live URL: https://safety-il.onrender.com
 
-The Anthropic API key is stored in Render → Environment as `ANTHROPIC_API_KEY`. The key belongs to the organization account, not a personal account.
+`ANTHROPIC_API_KEY` is set in Render → Environment (org account key).
 
 ## Key constraints
 
-- The system prompt requires the model to return **HTML only** with specific inline styles. Do not change this to markdown — the frontend renders it directly with `innerHTML`.
-- `SYSTEM_PROMPT` is a **closed system** — the model must not use general knowledge. Do not weaken the guardrails (Hebrew-only, refuse off-topic, no invented section numbers).
-- The checklist `CHECKLIST_SYSTEM` requires `<h2>` as the first element with a topic-specific title — this drives both the modal header and the WhatsApp message title.
-- The sidebar knowledge base list (Israeli safety legislation) is **static HTML** — it's decorative/informational, not connected to a real document store.
-- Uploaded files: only `.txt` files are actually read; PDF/Word files receive a stub message.
-- Mobile: sidebar is a fixed overlay (`right: -290px` → `right: 0`). On mobile, `openHistory()` opens the sidebar to the history tab; `restoreConversation()` closes it.
+- The system prompt enforces **HTML-only output** with specific inline styles. Do not switch to markdown — the frontend renders via `innerHTML`. `sanitizeHtml()` strips `<script>`, `<style>`, and all `on*=` attributes from Claude's responses before rendering.
+- `SYSTEM_PROMPT` is a **closed system** — never weaken the guardrails (Hebrew-only, off-topic refusal, no invented section numbers).
+- `CHECKLIST_SYSTEM` must produce `<h2>` as first element — this drives the modal title and the WhatsApp message header. `parseChecklistStructure` depends on `<h3>` + `<li>` structure from the model output.
+- The interactive checklist items are built by the client (not from Claude's HTML directly), so they are NOT passed through `sanitizeHtml` — they are safe because item text comes from `textContent` extraction.
+- Rate limit: 30K input tokens/minute. Each request uses ~15–20K tokens (3 selected docs × 8K chars + system prompt). Do not increase `selectRelevantDocs` to more than 3 docs or raise the per-doc char cap without testing.
+- Render has **ephemeral disk** — the knowledge base PDFs must be committed to the repo for them to survive deploys.
