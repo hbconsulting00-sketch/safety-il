@@ -347,6 +347,7 @@ body { font-family: 'Rubik', sans-serif; font-weight: 400; font-optical-sizing: 
       <button class="stab active" onclick="switchSidebarTab('law',this)">📜 חקיקה</button>
       <button class="stab" onclick="switchSidebarTab('company',this)">📁 נהלים</button>
       <button class="stab" onclick="switchSidebarTab('history',this)">📂 שיחות</button>
+      <button class="stab" onclick="switchSidebarTab('checklists',this)">📋 רשימות</button>
     </div>
 
     <!-- TAB: חקיקה -->
@@ -383,6 +384,11 @@ body { font-family: 'Rubik', sans-serif; font-weight: 400; font-optical-sizing: 
     <!-- TAB: שיחות שמורות -->
     <div id="stab-history" class="stab-panel" hidden>
       <div id="sidebar-history-list" style="flex:1;overflow-y:auto;padding:8px;"></div>
+    </div>
+
+    <!-- TAB: רשימות תיוג שמורות -->
+    <div id="stab-checklists" class="stab-panel" hidden>
+      <div id="saved-checklists-list" style="flex:1;overflow-y:auto;padding:8px;"></div>
     </div>
   </div>
 
@@ -429,6 +435,7 @@ body { font-family: 'Rubik', sans-serif; font-weight: 400; font-optical-sizing: 
     <div class="modal-head">
       <span class="modal-title">📋 רשימת תיוג — <span id="checklist-role-label"></span></span>
       <div class="modal-actions">
+        <button class="modal-btn" onclick="saveChecklist()" style="background:rgba(30,58,95,0.08);border-color:rgba(30,58,95,0.3);color:#1e3a5f">💾 שמור</button>
         <button class="modal-btn" onclick="whatsappChecklist()" style="background:rgba(22,163,74,0.10);border-color:rgba(22,163,74,0.4);color:#16a34a">📤 WhatsApp</button>
         <button class="modal-btn" onclick="printChecklist()">🖨️ הדפס מלא</button>
         <button class="modal-btn" onclick="printBlankChecklist()">📄 הורד ריק</button>
@@ -1167,13 +1174,14 @@ function saveConversation() {
 }
 
 function switchSidebarTab(tab, btn) {
-  ['law','company','history'].forEach(t => {
+  ['law','company','history','checklists'].forEach(t => {
     document.getElementById('stab-' + t).hidden = (t !== tab);
   });
   document.querySelectorAll('.stab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   else document.querySelector(`.stab[onclick*="'${tab}'"]`)?.classList.add('active');
   if (tab === 'history') renderSidebarHistory();
+  if (tab === 'checklists') renderSavedChecklists();
 }
 
 function renderSidebarHistory() {
@@ -1226,6 +1234,81 @@ function deleteHistoryItem(index) {
   history.splice(index, 1);
   localStorage.setItem('safetyil_history', JSON.stringify(history));
   renderSidebarHistory();
+}
+
+// ── SAVE / RESTORE CHECKLISTS (localStorage) ──
+function saveChecklist() {
+  if (!currentChecklistData || !currentChecklistData.allItems.length) { showToast('אין רשימה לשמירה'); return; }
+  const els = document.querySelectorAll('#checklist-content .cl-item');
+  const items = [];
+  els.forEach(el => {
+    const text = el.querySelector('.cl-text')?.textContent?.trim() || '';
+    const state = parseInt(el.dataset.state || '0');
+    if (text) items.push({ text, state });
+  });
+  const saved = JSON.parse(localStorage.getItem('safetyil_checklists') || '[]');
+  saved.unshift({
+    id: Date.now().toString(),
+    date: new Date().toLocaleDateString('he-IL'),
+    role: currentRole,
+    title: currentChecklistData.title,
+    items
+  });
+  localStorage.setItem('safetyil_checklists', JSON.stringify(saved.slice(0, 50)));
+  showToast('✅ רשימה נשמרה!');
+}
+
+function renderSavedChecklists() {
+  const saved = JSON.parse(localStorage.getItem('safetyil_checklists') || '[]');
+  const list = document.getElementById('saved-checklists-list');
+  if (!saved.length) {
+    list.innerHTML = '<div class="hist-empty">אין רשימות שמורות עדיין.<br><br>צרי רשימת תיוג ולחצי <strong>💾 שמור</strong>.</div>';
+    return;
+  }
+  list.innerHTML = saved.map((item, i) => {
+    const done = item.items.filter(it => it.state === 1).length;
+    const total = item.items.length;
+    return `<div class="hist-item" onclick="openSavedChecklist(${i})">
+      <div class="hist-info">
+        <div class="hist-title">${escHtml(item.title)}</div>
+        <div class="hist-meta">
+          <span>${item.date}</span><span>•</span>
+          <span>${item.role}</span><span>•</span>
+          <span>${done}/${total} ✅</span>
+        </div>
+      </div>
+      <button class="hist-del" onclick="event.stopPropagation();deleteSavedChecklist(${i})" title="מחק">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function openSavedChecklist(index) {
+  const saved = JSON.parse(localStorage.getItem('safetyil_checklists') || '[]');
+  const item = saved[index];
+  if (!item) return;
+  currentChecklistData = {
+    title: item.title,
+    sections: [{ title: '', items: item.items.map(it => it.text) }],
+    allItems: item.items.map(it => it.text)
+  };
+  currentRole = item.role;
+  document.querySelectorAll('.role-btn').forEach(b => b.classList.toggle('active', b.getAttribute('onclick')?.includes(`'${currentRole}'`)));
+  document.getElementById('checklist-role-label').textContent = item.title;
+  let html = `<div style="margin-bottom:10px;padding:7px 14px;background:rgba(100,20,20,0.04);border-radius:8px;font-size:13px;color:var(--text-muted);text-align:center">לחץ/י על פריט לסימון: ☐ → ✅ → ❌</div>`;
+  item.items.forEach(it => {
+    const sym = ['☐','✅','❌'][it.state] || '☐';
+    html += `<div class="cl-item" data-state="${it.state}" onclick="cycleCheckState(this)"><span class="cl-box">${sym}</span><span class="cl-text">${escHtml(it.text)}</span></div>`;
+  });
+  document.getElementById('checklist-content').innerHTML = html;
+  document.getElementById('checklist-modal').style.display = 'flex';
+  if (window.innerWidth <= 768) closeSidebar();
+}
+
+function deleteSavedChecklist(index) {
+  const saved = JSON.parse(localStorage.getItem('safetyil_checklists') || '[]');
+  saved.splice(index, 1);
+  localStorage.setItem('safetyil_checklists', JSON.stringify(saved));
+  renderSavedChecklists();
 }
 
 // ── WHATSAPP CHECKLIST — sends interactive link ──
